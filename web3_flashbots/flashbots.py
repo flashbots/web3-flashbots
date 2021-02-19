@@ -1,4 +1,4 @@
-# Wrapper around Web3.py's 
+# Wrapper around Web3.py's
 from typing import Callable, Optional, Union, List
 from hexbytes.main import HexBytes
 from web3 import Web3
@@ -79,7 +79,7 @@ class Flashbots(ModuleV2):
                 # and update the tx details
                 tx["from"] = signer.address
                 tx["gasPrice"] = 0
-                tx["gas"] = self.web3.eth.estimateGas(tx)
+                tx["gas"] = self.w3.eth.estimateGas(tx)
 
                 # sign the tx
                 signed_tx = signer.sign_transaction(tx)
@@ -96,8 +96,8 @@ class Flashbots(ModuleV2):
         """ Given a raw signed bundle, it packages it up with the block numbre and the timestamps """
         # convert to hex
         return [
-            list(map(lambda x: x.hex(), signed_bundled_transactions)), 
-            hex(target_block_number), 
+            list(map(lambda x: x.hex(), signed_bundled_transactions)),
+            hex(target_block_number),
             opts["minTimestamp"] if opts else 0,
             opts["maxTimestamp"] if opts else 0,
         ]
@@ -114,10 +114,10 @@ class Flashbots(ModuleV2):
          opts: Optional[FlashbotsOpts] = None,
      ) -> List[Any]:
         signed_txs = self.sign_bundle(bundled_transactions)
-        self.response = FlashbotsTransactionResponse(self.web3, signed_txs, target_block_number)
+        self.response = FlashbotsTransactionResponse(self.w3, signed_txs, target_block_number)
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
-    def raw_bundle_formatter(self, resp) -> Any: 
+    def raw_bundle_formatter(self, resp) -> Any:
         return lambda _: resp.response
 
     sendBundle: Method[Callable[[Any], Any]] = Method(
