@@ -1,4 +1,4 @@
-# Wrapper around Web3.py's 
+# Wrapper around Web3.py's
 from typing import Callable, Optional, Union, List
 from hexbytes.main import HexBytes
 from web3 import Web3
@@ -46,7 +46,9 @@ class FlashbotsTransactionResponse:
     def receipts(self):
         """ Returns all the transaction receipts from the submitted bundle """
         self.wait()
-        return list(map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle))
+        return list(
+            map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle)
+        )
 
 
 class Flashbots(ModuleV2):
@@ -54,8 +56,8 @@ class Flashbots(ModuleV2):
     response: FlashbotsTransactionResponse
 
     def sign_bundle(
-            self,
-            bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
+        self,
+        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
     ) -> List[HexBytes]:
         """ Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces = {}
@@ -91,10 +93,10 @@ class Flashbots(ModuleV2):
         return signed_transactions
 
     def send_raw_bundle_munger(
-            self,
-            signed_bundled_transactions: List[HexBytes],
-            target_block_number: int,
-            opts: Optional[FlashbotsOpts] = None,
+        self,
+        signed_bundled_transactions: List[HexBytes],
+        target_block_number: int,
+        opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
         """ Given a raw signed bundle, it packages it up with the block numbre and the timestamps """
         # convert to hex
@@ -111,13 +113,15 @@ class Flashbots(ModuleV2):
     )
 
     def send_bundle_munger(
-            self,
-            bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
-            target_block_number: int,
-            opts: Optional[FlashbotsOpts] = None,
+        self,
+        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
+        target_block_number: int,
+        opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
         signed_txs = self.sign_bundle(bundled_transactions)
-        self.response = FlashbotsTransactionResponse(self.web3, signed_txs, target_block_number)
+        self.response = FlashbotsTransactionResponse(
+            self.web3, signed_txs, target_block_number
+        )
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
     def raw_bundle_formatter(self, resp) -> Any:
@@ -129,41 +133,65 @@ class Flashbots(ModuleV2):
         result_formatters=raw_bundle_formatter,
     )
 
-    def simulate(self, bundledTransactions, blocktag: int = None, stateblocktag: int = None,
-                 blocktimestamp: int = None):
+    def simulate(
+        self,
+        bundledTransactions,
+        blocktag: int = None,
+        stateblocktag: int = None,
+        blocktimestamp: int = None,
+    ):
         # get block details
-        blockDetails = self.web3.eth.get_block(blocktag) if blocktag != None else self.web3.eth.get_block("latest")
+        blockDetails = (
+            self.web3.eth.get_block(blocktag)
+            if blocktag != None
+            else self.web3.eth.get_block("latest")
+        )
 
         # sets evm params
         evmBlockNumber = self.web3.toHex(blockDetails.number)
-        evmBlockStateNumber = stateblocktag if stateblocktag != None else self.web3.toHex(blockDetails.number - 1)
-        evmTimestamp = blocktimestamp if blocktimestamp != None else self.extrapolateTimestamp(blocktag,
-                                                                                               blockDetails.number)
+        evmBlockStateNumber = (
+            stateblocktag
+            if stateblocktag != None
+            else self.web3.toHex(blockDetails.number - 1)
+        )
+        evmTimestamp = (
+            blocktimestamp
+            if blocktimestamp != None
+            else self.extrapolateTimestamp(blocktag, blockDetails.number)
+        )
 
         signedBundledTransactions = self.sign_bundle(bundledTransactions)
         # calls evm simulator
-        callResult = self.callBundle(signedBundledTransactions, evmBlockNumber, evmBlockStateNumber, evmTimestamp)
+        callResult = self.callBundle(
+            signedBundledTransactions, evmBlockNumber, evmBlockStateNumber, evmTimestamp
+        )
 
         return {
-            'bundleHash': callResult['bundleHash'],
-            'coinbaseDiff': callResult['coinbaseDiff'],
-            'results': callResult['results'],
-            'totalGasUsed': reduce(lambda a, b: a + b['gasUsed'], callResult['results'], 0)
+            "bundleHash": callResult["bundleHash"],
+            "coinbaseDiff": callResult["coinbaseDiff"],
+            "results": callResult["results"],
+            "totalGasUsed": reduce(
+                lambda a, b: a + b["gasUsed"], callResult["results"], 0
+            ),
         }
 
     def extrapolateTimestamp(self, blockTag: int, latestBlockNumber: int):
         blockDelta = blockTag - latestBlockNumber
         if blockDelta < 0:
-            raise Exception('block extrapolation negative')
-        return self.web3.eth.get_block(latestBlockNumber)['timestamp'] + (blockDelta * SECONDS_PER_BLOCK)
+            raise Exception("block extrapolation negative")
+        return self.web3.eth.get_block(latestBlockNumber)["timestamp"] + (
+            blockDelta * SECONDS_PER_BLOCK
+        )
 
     def call_bundle_munger(
-            self,
-            signed_bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
-            evm_block_number,
-            evm_block_state_number,
-            evm_timestamp,
-            opts: Optional[FlashbotsOpts] = None,
+        self,
+        signed_bundled_transactions: List[
+            Union[FlashbotsBundleTx, FlashbotsBundleRawTx]
+        ],
+        evm_block_number,
+        evm_block_state_number,
+        evm_timestamp,
+        opts: Optional[FlashbotsOpts] = None,
     ) -> Any:
         """ Given a raw signed bundle, it packages it up with the block number and the timestamps """
         inpt = [
