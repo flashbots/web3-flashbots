@@ -1,5 +1,5 @@
 from eth_account.account import Account
-from web3 import Web3, HTTPProvider
+from web3 import Web3, WebsocketProvider
 from web3._utils.transactions import wait_for_transaction_receipt
 from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.types import Wei
@@ -15,7 +15,7 @@ user = Account.create("test")
 
 if __name__ == "__main__":
     # instantiate Web3 as usual
-    w3 = Web3(HTTPProvider("http://localhost:8545"))
+    w3 = Web3(WebsocketProvider("ws://localhost:8546"))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(faucet))
     # inject the new data
     flashbot(
