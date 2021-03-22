@@ -1,4 +1,14 @@
-# web3-flashbots
+# WORK IN PROGRESS
+This fork is intended for my personal rewrite/fixup of the flashbot web3.py module.
+
+*Assume that this repository is non-functional*
+
+## TODO:
+* Implement signatures
+* Make simple example for front/backrunning for example
+* Cleanup Types
+* Cleanup the web3 module (should be possible to expose )
+
 
 This library works by injecting a new module in the Web3.py instance, which allows
 submitting "bundles" of transactions directly to miners. This is done by also creating
@@ -29,5 +39,14 @@ Poetry will automatically fix your venv and all packages needed
 ```
 poetry install
 ```
+Tips: PyCharm has a poetry plugin
 
-Tips: PyCharm has a poetry plugin too
+
+## Linting
+It's advisable to run black with default rules for linting
+
+```
+sudo pip install black # Black should be installed with a global entrypoint
+black .
+```
+
