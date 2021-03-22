@@ -1,7 +1,9 @@
 # WORK IN PROGRESS
 This fork is intended for my personal rewrite/fixup of the flashbot web3.py module.
 
-*Assume that this repository is non-functional*
+*Assume that this repository is non-functional regardless of CI status below*
+
+[![CI](https://github.com/N0K0/web3-flashbots/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/N0K0/web3-flashbots/actions/workflows/main.yml)
 
 ## TODO:
 * Implement signatures
