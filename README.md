@@ -7,6 +7,7 @@ This fork is intended for my personal rewrite/fixup of the flashbot web3.py modu
 
 ## TODO:
 * Implement signatures
+*   https://discord.com/channels/755466764501909692/795777653197635596/823400173782171649
 * Make simple example for front/backrunning for example
 * Cleanup Types
 * Cleanup the web3 module (should be possible to expose )
