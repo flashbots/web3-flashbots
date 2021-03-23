@@ -26,7 +26,7 @@ if __name__ == "__main__":
     )
 
     # faucet funds the user
-    assert w3.eth.getBalance(user.address) == 0
+    assert w3.eth.get_balance(user.address) == 0
     tx = w3.eth.sendTransaction(
         {
             "from": faucet.address,
@@ -35,9 +35,9 @@ if __name__ == "__main__":
         }
     )
     wait_for_transaction_receipt(w3, tx, 10, 1)
-    assert w3.eth.getBalance(user.address) != 0
+    assert w3.eth.get_balance(user.address) != 0
 
-    nonce = w3.eth.getTransactionCount(user.address)
+    nonce = w3.eth.get_transaction_count(user.address)
     bribe = w3.toWei("0.92", "ether")
 
     signed_transaction = user.sign_transaction(
@@ -76,12 +76,12 @@ if __name__ == "__main__":
     block_number = receipts[0].blockNumber
 
     # the miner has received the amount expected
-    bal_before = w3.eth.getBalance(faucet.address, block_number - 1)
-    bal_after = w3.eth.getBalance(faucet.address, block_number)
+    bal_before = w3.eth.get_balance(faucet.address, block_number - 1)
+    bal_after = w3.eth.get_balance(faucet.address, block_number)
     profit = bal_after - bal_before - w3.toWei("2", "ether")  # sub block reward
     print("Balance before", bal_before)
     print("Balance after", bal_after)
     assert profit == bribe
 
     # the tx is successful
-    assert w3.eth.getBalance(dummy_receiver) == 123
+    assert w3.eth.get_balance(dummy_receiver) == 123
