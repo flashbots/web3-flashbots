@@ -23,8 +23,8 @@ def flashbot(
     flashbots_provider = HTTPProvider(
         flashbots_url, request_kwargs={"headers": headers}
     )
-    middleware = construct_flashbots_middleware(flashbots_provider)
-    w3.middleware_onion.add(middleware)
+    flash_middleware = construct_flashbots_middleware(flashbots_provider)
+    w3.middleware_onion.add(flash_middleware)
 
     # attach modules to add the new namespace commands
     attach_modules(w3, {"flashbots": (Flashbots,)})
