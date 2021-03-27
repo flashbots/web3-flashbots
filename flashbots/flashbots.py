@@ -7,7 +7,7 @@ from web3.types import RPCEndpoint, Nonce, _Hash32
 from typing import Any, List, Optional, Callable, Union
 from functools import reduce
 
-from .types import *
+from .types import FlashbotsOpts, FlashbotsBundleRawTx, FlashbotsBundleTx
 import time
 
 SECONDS_PER_BLOCK = 15
