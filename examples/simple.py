@@ -15,6 +15,7 @@ import os
 In this example we setup a transaction for 0.1 eth with a gasprice of 1
 From here we will use Flashbots to pass a bundle with the needed content
 """
+ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
 ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_FROM"))
 ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_TO"))
 
@@ -22,7 +23,7 @@ print("Connecting to RPC")
 # Setup w3 and flashbots
 w3 = Web3(HTTPProvider("http://localhost:8545"))
 w3.middleware_onion.add(construct_sign_and_send_raw_middleware(ETH_ACCOUNT_FROM))
-flashbot(w3)
+flashbot(w3, ETH_ACCOUNT_SIGNATURE.privateKey)
 
 print(
     f"From account {ETH_ACCOUNT_FROM.address}: {w3.eth.get_balance(ETH_ACCOUNT_FROM.address)}"
@@ -52,11 +53,6 @@ except ValueError as e:
         print("Have TX in pool we can use for the example")
     else:
         raise
-
-# rx = w3.eth.waitForTransactionReceipt(tx)
-pending = w3.geth.txpool.content().pending
-
-txs = flatten_tx_pool(pending)
 
 
 print("Setting up flashbots request")
