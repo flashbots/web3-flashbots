@@ -1,11 +1,9 @@
-# Wrapper around Web3.py's
-from typing import Callable, Optional, Union, List
-from hexbytes.main import HexBytes
+from hexbytes import HexBytes
 from web3 import Web3
 from web3.method import Method
 from web3.module import ModuleV2
 from web3.types import RPCEndpoint, Nonce
-from typing import Any
+from typing import Any, List, Optional, Callable, Union
 from functools import reduce
 
 from .types import *
@@ -85,6 +83,7 @@ class Flashbots(ModuleV2):
                 # and update the tx details
                 tx["from"] = signer.address
                 tx["gasPrice"] = 0
+                # TODO: Is this available?
                 tx["gas"] = self.w3.eth.estimateGas(tx)
                 # sign the tx
                 signed_tx = signer.sign_transaction(tx)
@@ -111,6 +110,7 @@ class Flashbots(ModuleV2):
         FlashbotsRPC.eth_sendBundle,
         mungers=[send_raw_bundle_munger],
     )
+    send_raw_bundle = sendRawBundle
 
     def send_bundle_munger(
         self,
@@ -132,55 +132,59 @@ class Flashbots(ModuleV2):
         mungers=[send_bundle_munger],
         result_formatters=raw_bundle_formatter,
     )
+    send_bundle = sendBundle
 
     def simulate(
         self,
-        bundledTransactions,
-        blocktag: int = None,
-        stateblocktag: int = None,
-        blocktimestamp: int = None,
+        bundled_transactions,
+        block_tag: int = None,
+        state_block_tag: int = None,
+        block_timestamp: int = None,
     ):
         # get block details
-        blockDetails = (
-            self.web3.eth.get_block(blocktag)
-            if blocktag != None
+        block_details = (
+            self.web3.eth.get_block(block_tag)
+            if block_tag is not None
             else self.web3.eth.get_block("latest")
         )
 
         # sets evm params
-        evmBlockNumber = self.web3.toHex(blockDetails.number)
-        evmBlockStateNumber = (
-            stateblocktag
-            if stateblocktag != None
-            else self.web3.toHex(blockDetails.number - 1)
+        evm_block_number = self.web3.toHex(block_details.number)
+        evm_block_state_number = (
+            state_block_tag
+            if state_block_tag is not None
+            else self.web3.toHex(block_details.number - 1)
         )
-        evmTimestamp = (
-            blocktimestamp
-            if blocktimestamp != None
-            else self.extrapolateTimestamp(blocktag, blockDetails.number)
+        evm_timestamp = (
+            block_timestamp
+            if block_timestamp is not None
+            else self.extrapolate_timestamp(block_tag, block_details.number)
         )
 
-        signedBundledTransactions = self.sign_bundle(bundledTransactions)
+        signed_bundled_transactions = self.sign_bundle(bundled_transactions)
         # calls evm simulator
-        callResult = self.callBundle(
-            signedBundledTransactions, evmBlockNumber, evmBlockStateNumber, evmTimestamp
+        call_result = self.call_bundle(
+            signed_bundled_transactions,
+            evm_block_number,
+            evm_block_state_number,
+            evm_timestamp,
         )
 
         return {
-            "bundleHash": callResult["bundleHash"],
-            "coinbaseDiff": callResult["coinbaseDiff"],
-            "results": callResult["results"],
+            "bundleHash": call_result["bundleHash"],
+            "coinbaseDiff": call_result["coinbaseDiff"],
+            "results": call_result["results"],
             "totalGasUsed": reduce(
-                lambda a, b: a + b["gasUsed"], callResult["results"], 0
+                lambda a, b: a + b["gasUsed"], call_result["results"], 0
             ),
         }
 
-    def extrapolateTimestamp(self, blockTag: int, latestBlockNumber: int):
-        blockDelta = blockTag - latestBlockNumber
-        if blockDelta < 0:
+    def extrapolate_timestamp(self, block_tag: int, latest_block_number: int):
+        block_delta = block_tag - latest_block_number
+        if block_delta < 0:
             raise Exception("block extrapolation negative")
-        return self.web3.eth.get_block(latestBlockNumber)["timestamp"] + (
-            blockDelta * SECONDS_PER_BLOCK
+        return self.web3.eth.get_block(latest_block_number)["timestamp"] + (
+            block_delta * SECONDS_PER_BLOCK
         )
 
     def call_bundle_munger(
@@ -202,7 +206,7 @@ class Flashbots(ModuleV2):
         ]
         return inpt
 
-    callBundle: Method[Callable[[Any], Any]] = Method(
+    call_bundle: Method[Callable[[Any], Any]] = Method(
         json_rpc_method=FlashbotsRPC.eth_callBundle,
         mungers=[call_bundle_munger],
     )
