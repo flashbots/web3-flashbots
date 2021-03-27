@@ -1,10 +1,10 @@
 from eth_account.account import Account
-from web3 import Web3, WebsocketProvider
+from web3 import Web3, HTTPProvider
 from web3._utils.transactions import wait_for_transaction_receipt
 from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.types import Wei
 
-from web3_flashbots import flashbot
+from flashbots import flashbot
 
 # test miner account
 faucet = Account.privateKeyToAccount(
@@ -15,25 +15,21 @@ user = Account.create("test")
 
 if __name__ == "__main__":
     # instantiate Web3 as usual
-    w3 = Web3(WebsocketProvider("ws://localhost:8546"))
+    w3 = Web3(HTTPProvider("http://localhost:8545"))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(faucet))
     # inject the new data
-    flashbot(
-        w3,
-        flashbots_key_id="5",
-        flashbots_secret="2",
-        flashbots_url="http://localhost:8545",
-    )
+    flashbot(w3)
 
     # faucet funds the user
     assert w3.eth.get_balance(user.address) == 0
-    tx = w3.eth.sendTransaction(
+    tx = w3.eth.send_transaction(
         {
             "from": faucet.address,
             "to": user.address,
             "value": w3.toWei("1.1", "ether"),
         }
     )
+
     wait_for_transaction_receipt(w3, tx, 10, 1)
     assert w3.eth.get_balance(user.address) != 0
 
@@ -67,9 +63,11 @@ if __name__ == "__main__":
         },
     ]
 
-    block = w3.eth.blockNumber
+    block = w3.eth.block_number
 
-    result = w3.flashbots.sendBundle(bundle, target_block_number=w3.eth.blockNumber + 3)
+    result = w3.flashbots.send_bundle(
+        bundle, target_block_number=w3.eth.blockNumber + 3
+    )
     result.wait()
     receipts = result.receipts()
 

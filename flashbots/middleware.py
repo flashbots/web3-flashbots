@@ -4,6 +4,7 @@ from web3.middleware import Middleware
 from web3.providers.rpc import HTTPProvider
 from web3.types import RPCEndpoint, RPCResponse
 from typing import Any
+from .provider import FlashbotProvider
 
 FLASHBOTS_METHODS = [
     "eth_sendBundle",
@@ -12,7 +13,7 @@ FLASHBOTS_METHODS = [
 
 
 def construct_flashbots_middleware(
-    flashbots_provider: HTTPProvider,
+    flashbots_provider: FlashbotProvider,
 ) -> Middleware:
     """Captures Flashbots RPC requests and sends them to the Flashbots endpoint
     while also injecting the required authorization headers

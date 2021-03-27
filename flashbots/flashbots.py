@@ -85,8 +85,7 @@ class Flashbots(ModuleV2):
                 # and update the tx details
                 tx["from"] = signer.address
                 tx["gasPrice"] = 0
-                # TODO: Is this available?
-                tx["gas"] = self.w3.eth.estimateGas(tx)
+                tx["gas"] = self.web3.eth.estimateGas(tx)
                 # sign the tx
                 signed_tx = signer.sign_transaction(tx)
                 signed_transactions.append(signed_tx.rawTransaction)
@@ -94,7 +93,7 @@ class Flashbots(ModuleV2):
         return signed_transactions
 
     def send_raw_bundle_munger(
-        self,
+            self,
         signed_bundled_transactions: List[HexBytes],
         target_block_number: int,
         opts: Optional[FlashbotsOpts] = None,
@@ -126,7 +125,7 @@ class Flashbots(ModuleV2):
         )
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
-    def raw_bundle_formatter(self, resp) -> Any:
+    def raw_bundle_formatter(self,resp) -> Any:
         return lambda _: resp.response
 
     sendBundle: Method[Callable[[Any], Any]] = Method(
@@ -189,8 +188,8 @@ class Flashbots(ModuleV2):
             block_delta * SECONDS_PER_BLOCK
         )
 
-    @staticmethod
     def call_bundle_munger(
+        self,
         signed_bundled_transactions: List[
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx]
         ],

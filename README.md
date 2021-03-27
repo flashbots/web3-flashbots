@@ -7,7 +7,6 @@ This fork is intended for my personal rewrite/fixup of the flashbot web3.py modu
 
 ## TODO:
 * Implement signatures
-*   https://discord.com/channels/755466764501909692/795777653197635596/823400173782171649
 * Make simple example for front/backrunning for example
 * Cleanup Types
 * Cleanup the web3 module (should be possible to expose )
@@ -21,10 +20,10 @@ them to an RPC endpoint which you have specified, which corresponds to `mev-geth
 ## Example
 
 ```python
-from web3 import Web3, WebsocketProvider
-from web3_flashbots import flashbot
-w3 = Web3(WebsocketProvider("ws://localhost:8546"))
-flashbot(w3, flashbots_key_id="MY_API_ID", flashbots_secret="MY_API_SECRET")
+from web3 import Web3, HTTPProvider
+from flashbots import flashbot
+w3 = Web3(HTTPProvider("http://localhost:8545"))
+flashbot(w3)
 ```
 
 Now the `w3.flashbots.sendBundle` method should be available to you. Look in `examples/demo.py` for usage examples
@@ -33,7 +32,7 @@ Now the `w3.flashbots.sendBundle` method should be available to you. Look in `ex
 
 Setup and run (mev-)geth with Websocket support:
 ```
-geth --ws --ws.api eth,net,web3,txpool --syncmode full
+geth --http --http.api eth,net,web3,txpool --syncmode full
 ```
 
 Install [poetry](https://python-poetry.org/)
