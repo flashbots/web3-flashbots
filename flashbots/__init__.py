@@ -1,10 +1,10 @@
-
 from web3 import Web3, HTTPProvider
 from web3._utils.module import attach_modules
 
 from .middleware import construct_flashbots_middleware
 from .flashbots import Flashbots
 from .provider import FlashbotProvider
+
 DEFAULT_FLASHBOTS_RELAY = "https://relay.flashbots.net"
 
 
@@ -21,4 +21,3 @@ def flashbot(
 
     # attach modules to add the new namespace commands
     attach_modules(w3, {"flashbots": (Flashbots,)})
-

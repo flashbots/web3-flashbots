@@ -93,7 +93,7 @@ class Flashbots(ModuleV2):
         return signed_transactions
 
     def send_raw_bundle_munger(
-            self,
+        self,
         signed_bundled_transactions: List[HexBytes],
         target_block_number: int,
         opts: Optional[FlashbotsOpts] = None,
@@ -125,7 +125,7 @@ class Flashbots(ModuleV2):
         )
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
-    def raw_bundle_formatter(self,resp) -> Any:
+    def raw_bundle_formatter(self, resp) -> Any:
         return lambda _: resp.response
 
     sendBundle: Method[Callable[[Any], Any]] = Method(
