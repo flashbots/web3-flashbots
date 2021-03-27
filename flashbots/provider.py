@@ -12,16 +12,18 @@ from eth_keys.datatypes import PrivateKey
 
 
 def get_default_endpoint() -> URI:
-    return URI(os.environ.get('FLASHBOTS_HTTP_PROVIDER_URI', 'https://relay.flashbots.net'))
+    return URI(
+        os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://relay.flashbots.net")
+    )
 
 
 class FlashbotProvider(HTTPProvider):
     def __init__(
-            self,
-            signature_key: Union[bytes, str, int, PrivateKey],
-            endpoint_uri: Optional[Union[URI, str]] = get_default_endpoint(),
-            request_kwargs: Optional[Any] = None,
-            session: Optional[Any] = None
+        self,
+        signature_key: Union[bytes, str, int, PrivateKey],
+        endpoint_uri: Optional[Union[URI, str]] = get_default_endpoint(),
+        request_kwargs: Optional[Any] = None,
+        session: Optional[Any] = None,
     ):
         super().__init__(endpoint_uri, request_kwargs, session)
         self.signature_key = signature_key
@@ -32,11 +34,13 @@ class FlashbotProvider(HTTPProvider):
         )
         request_data = self.encode_rpc_request(method, params)
 
-        message = messages.encode_defunct(text=Web3.keccak(text=request_data.decode("utf-8")).hex())
+        message = messages.encode_defunct(
+            text=Web3.keccak(text=request_data.decode("utf-8")).hex()
+        )
         signed_message = Account.sign_message(message, private_key=self.signature_key)
 
         headers = self.get_request_headers() | {
-            'X-Flashbots-Signature': f"{self.signature_key.hex()}:{signed_message.signature.hex()}"
+            "X-Flashbots-Signature": f"{self.signature_key.hex()}:{signed_message.signature.hex()}"
         }
 
         raw_response = make_post_request(
