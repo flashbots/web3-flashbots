@@ -24,3 +24,19 @@ FlashbotsOpts = TypedDict(
         "maxTimestamp": int,
     },
 )
+
+
+# Type missing from eth_account, not really a part of flashbots web3 per sé
+SignTx = TypedDict(
+    'SignTx',
+    {
+        'nonce': int,
+        'chainId': int,
+        'to': str,
+        'data': str,
+        'value': int,
+        'gas': int,
+        'gasPrice': int,
+    },
+    total=False
+)

@@ -1,8 +1,9 @@
+from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.method import Method
 from web3.module import ModuleV2
-from web3.types import RPCEndpoint, Nonce
+from web3.types import RPCEndpoint, Nonce, _Hash32
 from typing import Any, List, Optional, Callable, Union
 from functools import reduce
 
@@ -26,6 +27,7 @@ class FlashbotsTransactionResponse:
         self.w3 = w3
 
         # TODO: Parse them instead
+        # TODO: Add type
         def parse_tx(tx):
             return {
                 "signed_transaction": tx,
@@ -36,12 +38,12 @@ class FlashbotsTransactionResponse:
         self.bundle = list(map(parse_tx, txs))
         self.target_block_number = target_block_number
 
-    def wait(self):
+    def wait(self) -> None:
         """ Waits until the target block has been reached """
         while self.w3.eth.blockNumber < self.target_block_number:
             time.sleep(1)
 
-    def receipts(self):
+    def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
         """ Returns all the transaction receipts from the submitted bundle """
         self.wait()
         return list(
@@ -187,8 +189,8 @@ class Flashbots(ModuleV2):
             block_delta * SECONDS_PER_BLOCK
         )
 
+    @staticmethod
     def call_bundle_munger(
-        self,
         signed_bundled_transactions: List[
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx]
         ],
