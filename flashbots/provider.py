@@ -39,7 +39,9 @@ class FlashbotProvider(HTTPProvider):
         message = messages.encode_defunct(
             text=Web3.keccak(text=request_data.decode("utf-8")).hex()
         )
-        signed_message = Account.sign_message(message, private_key=self.signature_account.privateKey.hex())
+        signed_message = Account.sign_message(
+            message, private_key=self.signature_account.privateKey.hex()
+        )
 
         headers = self.get_request_headers() | {
             "X-Flashbots-Signature": f"{self.signature_account.address}:{signed_message.signature.hex()}"
