@@ -21,7 +21,7 @@ w3 = Web3(HTTPProvider("http://localhost:8545"))
 flashbot(w3, ETH_ACCOUNT_SIGNATURE)
 ```
 
-Now the `w3.flashbots.sendBundle` method should be available to you. Look in `examples/demo.py` for usage examples
+Now the `w3.flashbots.sendBundle` method should be available to you. Look in `examples/simple.py` for usage examples
 
 # Development and testing
 
