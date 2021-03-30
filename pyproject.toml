@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "web3-flashbots"
+name = "flashbots"
 version = "0.3.0"
 description = ""
 authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0k0@hacky.software>"]
