@@ -1,14 +1,20 @@
 [tool.poetry]
-name = "web3-flashbots"
-version = "0.1.0"
+name = "flashbots"
+version = "0.3.0"
 description = ""
-authors = ["Georgios Konstantopoulos <me@gakonst.com>"]
+authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0k0@hacky.software>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-web3 = "^5.16.0"
+web3 = "^5.17.0"
 
 [tool.poetry.dev-dependencies]
+black = "^20.8b1"
+vcrpy = "^4.1.1"
+pytest-recording = "^0.11.0"
+
+[tool.black]
+line-length = 88
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
