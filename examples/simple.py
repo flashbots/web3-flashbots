@@ -67,7 +67,7 @@ signed_tx: SignTx = {
     "gas": 25000,
 }
 
-signed_transaction = ETH_ACCOUNT_TO.sign_transaction(signed_tx)
+signed_transaction = ETH_ACCOUNT_FROM.sign_transaction(signed_tx)
 
 bundle = [
     #  some transaction
