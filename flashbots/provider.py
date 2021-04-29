@@ -23,11 +23,12 @@ class FlashbotProvider(HTTPProvider):
     def __init__(
         self,
         signature_account: LocalAccount,
-        endpoint_uri: Optional[Union[URI, str]] = get_default_endpoint(),
+        endpoint_uri: Optional[Union[URI, str]] = None,
         request_kwargs: Optional[Any] = None,
         session: Optional[Any] = None,
     ):
-        super().__init__(endpoint_uri, request_kwargs, session)
+        _endpoint_uri = endpoint_uri or get_default_endpoint()
+        super().__init__(_endpoint_uri, request_kwargs, session)
         self.signature_account = signature_account
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
