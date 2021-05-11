@@ -22,6 +22,7 @@ FlashbotsOpts = TypedDict(
     {
         "minTimestamp": int,
         "maxTimestamp": int,
+        "revertingTxHashes": list[str]
     },
 )
 
