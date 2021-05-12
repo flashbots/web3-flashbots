@@ -19,11 +19,7 @@ FlashbotsBundleRawTx = TypedDict(
 
 FlashbotsOpts = TypedDict(
     "FlashbotsOpts",
-    {
-        "minTimestamp": int,
-        "maxTimestamp": int,
-        "revertingTxHashes": list[str]
-    },
+    {"minTimestamp": int, "maxTimestamp": int, "revertingTxHashes": list[str]},
 )
 
 
