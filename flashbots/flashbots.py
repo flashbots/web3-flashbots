@@ -101,10 +101,13 @@ class Flashbots(ModuleV2):
         """ Given a raw signed bundle, it packages it up with the block numbre and the timestamps """
         # convert to hex
         return [
-            list(map(lambda x: x.hex(), signed_bundled_transactions)),
-            hex(target_block_number),
-            opts["minTimestamp"] if opts else 0,
-            opts["maxTimestamp"] if opts else 0,
+            {
+                "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
+                "blockNumber": hex(target_block_number),
+                "minTimestamp": opts["minTimestamp"] if opts else 0,
+                "maxTimestamp": opts["maxTimestamp"] if opts else 0,
+                "revertingTxHashes": opts["revertingTxHashes"] if opts else [],
+            }
         ]
 
     sendRawBundle: Method[Callable[[Any], Any]] = Method(
@@ -200,10 +203,12 @@ class Flashbots(ModuleV2):
     ) -> Any:
         """ Given a raw signed bundle, it packages it up with the block number and the timestamps """
         inpt = [
-            list(map(lambda x: x.hex(), signed_bundled_transactions)),
-            evm_block_number,
-            evm_block_state_number,
-            evm_timestamp,
+            {
+                "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
+                "blockNumber": evm_block_number,
+                "stateBlockNumber": evm_block_state_number,
+                "timestamp": evm_timestamp,
+            }
         ]
         return inpt
 
