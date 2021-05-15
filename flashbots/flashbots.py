@@ -172,7 +172,7 @@ class Flashbots(ModuleV2):
         )
 
         return {
-            "signed_bundled_transactions": signed_bundled_transactions,
+            "signedBundledTransactions": signed_bundled_transactions,
             "bundleHash": call_result["bundleHash"],
             "coinbaseDiff": call_result["coinbaseDiff"],
             "results": call_result["results"],
