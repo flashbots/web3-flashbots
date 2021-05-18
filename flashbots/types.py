@@ -1,6 +1,6 @@
 from eth_account.account import Account
 from web3.types import TxParams
-from typing import TypedDict
+from typing import TypedDict, List
 
 FlashbotsBundleTx = TypedDict(
     "FlashbotsBundleTx",
@@ -19,7 +19,7 @@ FlashbotsBundleRawTx = TypedDict(
 
 FlashbotsOpts = TypedDict(
     "FlashbotsOpts",
-    {"minTimestamp": int, "maxTimestamp": int, "revertingTxHashes": list[str]},
+    {"minTimestamp": int, "maxTimestamp": int, "revertingTxHashes": List[str]},
 )
 
 
