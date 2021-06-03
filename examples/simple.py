@@ -4,102 +4,86 @@ from web3.middleware import construct_sign_and_send_raw_middleware
 from flashbots import flashbot
 from flashbots.types import SignTx
 from eth_account.account import Account
-from web3 import Web3, HTTPProvider
+from web3 import Web3, HTTPProvider, exceptions
 from web3.types import TxParams, Wei
 
 import os
+import requests
+import math
 
 """
-In this example we setup a transaction for 0.1 eth with a gasprice of 1
-From here we will use Flashbots to pass a bundle with the needed content
+In this example we setup a transaction for 0.1 eth with an appropriate gasprice.
+From here we will use Flashbots to pass a bundle with the needed content.
 """
-ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(
-    os.environ.get("ETH_SIGNATURE_KEY")
-)
-ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_FROM"))
-ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_TO"))
 
-print("Connecting to RPC")
-# Setup w3 and flashbots
+if not os.environ.get("SEND_TO") or not os.environ.get("ETH_PRIVATE_KEY"):
+    print("env variables ETH_PRIVATE_KEY and SEND_TO required")
+    exit(1)
+
+# signifies your identify to the flashbots network
+FLASHBOTS_SIGNATURE: LocalAccount = Account.create()
+ETH_ACCOUNT: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_KEY"))
+SEND_TO: str = os.environ.get("SEND_TO") # Eth address to send to
+
+print("connecting to RPC")
 w3 = Web3(HTTPProvider("http://localhost:8545"))
-w3.middleware_onion.add(construct_sign_and_send_raw_middleware(ETH_ACCOUNT_FROM))
-flashbot(w3, ETH_ACCOUNT_SIGNATURE)
+w3.middleware_onion.add(construct_sign_and_send_raw_middleware(ETH_ACCOUNT))
+flashbot(w3, FLASHBOTS_SIGNATURE)
 
-print(
-    f"From account {ETH_ACCOUNT_FROM.address}: {w3.eth.get_balance(ETH_ACCOUNT_FROM.address)}"
-)
-print(
-    f"To account {ETH_ACCOUNT_TO.address}: {w3.eth.get_balance(ETH_ACCOUNT_TO.address)}"
-)
+print(f"account {ETH_ACCOUNT.address}: {w3.eth.get_balance(ETH_ACCOUNT.address)} wei")
 
-# Setting up an transaction with 1 in gasPrice where we are trying to send
-print("Sending request")
-params: TxParams = {
-    "from": ETH_ACCOUNT_FROM.address,
-    "to": ETH_ACCOUNT_TO.address,
+# the bribe is contained in the gas price when not using a custom smart contract.
+# it must be high enough to make all the transactions in the bundle have a 
+# competative affective average gas price 
+def get_gas_price():
+    gas_api = 'https://ethgasstation.info/json/ethgasAPI.json'
+    response = requests.get(gas_api).json()
+
+    gas_multiplier = 10
+    gas_price_gwei = math.floor(response["fastest"] / 10 * gas_multiplier)
+    gas_price = w3.toWei(gas_price_gwei, 'gwei')
+    return gas_price
+
+# create a transaction
+tx: TxParams = {
+    "from": ETH_ACCOUNT.address,
+    "to": w3.toChecksumAddress(SEND_TO),
     "value": w3.toWei("1.0", "gwei"),
-    "gasPrice": w3.toWei("1.0", "gwei"),
-    "nonce": w3.eth.get_transaction_count(ETH_ACCOUNT_FROM.address),
+    "gasPrice": get_gas_price(),
+    "nonce": w3.eth.get_transaction_count(ETH_ACCOUNT.address),
 }
+tx["gas"] = math.floor(w3.eth.estimate_gas(tx) * 1.2)
+signed_tx = ETH_ACCOUNT.sign_transaction(tx)
+print(f'created transasction {signed_tx.hash.hex()}')
+print(tx)
 
-try:
-    tx = w3.eth.send_transaction(
-        params,
-    )
-    print("Request sent! Waiting for receipt")
-except ValueError as e:
-    # Skipping if TX already is added and pending
-    if "replacement transaction underpriced" in e.args[0]["message"]:
-        print("Have TX in pool we can use for the example")
-    else:
-        raise
-
-
-print("Setting up flashbots request")
-nonce = w3.eth.get_transaction_count(ETH_ACCOUNT_FROM.address)
-bribe = w3.toWei("0.01", "ether")
-
-signed_tx: SignTx = {
-    "to": ETH_ACCOUNT_TO.address,
-    "value": bribe,
-    "nonce": nonce + 1,
-    "gasPrice": 0,
-    "gas": 25000,
-}
-
-signed_transaction = ETH_ACCOUNT_TO.sign_transaction(signed_tx)
-
+# create a flashbots bundle
 bundle = [
-    #  some transaction
-    {
-        "signer": ETH_ACCOUNT_FROM,
-        "transaction": {
-            "to": ETH_ACCOUNT_TO.address,
-            "value": Wei(123),
-            "nonce": nonce,
-            "gasPrice": 0,
-        },
-    },
-    # the bribe
-    {
-        "signed_transaction": signed_transaction.rawTransaction,
-    },
+    {"signed_transaction": signed_tx.rawTransaction},
+    # you can include other transactions in the bundle 
+    # in the order that you want them in the block
 ]
 
-block = w3.eth.block_number
+# flashbots bundles target a specific block, so we target
+# any one of the next 3 blocks by emitting 3 bundles
+block_number = w3.eth.block_number
+for i in range(1, 3):
+    w3.flashbots.send_bundle(bundle, target_block_number=block_number + i)
+print(f'bundle broadcasted at block {block_number}')
 
-result = w3.flashbots.send_bundle(bundle, target_block_number=w3.eth.blockNumber + 3)
-result.wait()
-receipts = result.receipts()
-block_number = receipts[0].blockNumber
+# wait for the transaction to get mined
+tx_id = signed_tx.hash
+while (True):
+    try:      
+        w3.eth.wait_for_transaction_receipt(
+            tx_id, timeout=1, poll_latency=0.1
+        )
+        break
 
-# the miner has received the amount expected
-bal_before = w3.eth.get_balance(ETH_ACCOUNT_FROM.address, block_number - 1)
-bal_after = w3.eth.get_balance(ETH_ACCOUNT_FROM.address, block_number)
-profit = bal_after - bal_before - w3.toWei("2", "ether")  # sub block reward
-print("Balance before", bal_before)
-print("Balance after", bal_after)
-assert profit == bribe
-
-# the tx is successful
-print(w3.eth.get_balance(ETH_ACCOUNT_TO.address))
+    except exceptions.TimeExhausted: 
+        print(w3.eth.block_number)
+        if w3.eth.block_number >= (block_number +3):
+            print("ERROR: transaction was not mined")
+            exit(1)
+        
+print(f'transaction confirmed at block {w3.eth.block_number}: {tx_id.hex()}')
