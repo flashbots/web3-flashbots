@@ -53,7 +53,7 @@ tx: TxParams = {
 }
 tx["gas"] = math.floor(w3.eth.estimate_gas(tx) * 1.2)
 signed_tx = ETH_ACCOUNT.sign_transaction(tx)
-print(f'created transasction {signed_tx.hash.hex()}')
+print(f'created transaction {signed_tx.hash.hex()}')
 print(tx)
 
 # create a flashbots bundle
