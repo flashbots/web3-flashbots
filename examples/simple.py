@@ -73,19 +73,17 @@ bundle = [
 block_number = w3.eth.block_number
 for i in range(1, 3):
     w3.flashbots.send_bundle(bundle, target_block_number=block_number + i)
-print(f"bundle broadcasted at block {block_number}")
+print(f'bundle broadcasted at block {block_number}')
 
 # wait for the transaction to get mined
-tx_id = signed_tx.hash
 while True:
     try:
-        w3.eth.wait_for_transaction_receipt(tx_id, timeout=1, poll_latency=0.1)
+        w3.eth.wait_for_transaction_receipt(signed_tx.hash, timeout=1, poll_latency=0.1)
         break
 
     except exceptions.TimeExhausted:
-        print(w3.eth.block_number)
         if w3.eth.block_number >= (block_number + 3):
             print("ERROR: transaction was not mined")
             exit(1)
-
-print(f"transaction confirmed at block {w3.eth.block_number}: {tx_id.hex()}")
+        
+print(f'transaction confirmed at block {w3.eth.block_number}')
