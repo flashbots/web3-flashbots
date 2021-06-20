@@ -33,7 +33,7 @@ print(f"account {ETH_ACCOUNT.address}: {w3.eth.get_balance(ETH_ACCOUNT.address)}
 
 # the bribe is contained in the gas price when not using a custom smart contract.
 # it must be high enough to make all the transactions in the bundle have a 
-# competative affective average gas price 
+# competitive affective average gas price 
 def get_gas_price():
     gas_api = 'https://ethgasstation.info/json/ethgasAPI.json'
     response = requests.get(gas_api).json()
