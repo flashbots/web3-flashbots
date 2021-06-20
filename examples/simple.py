@@ -69,7 +69,7 @@ bundle = [
 block_number = w3.eth.block_number
 for i in range(1, 3):
     w3.flashbots.send_bundle(bundle, target_block_number=block_number + i)
-print(f'bundle broadcasted at block {block_number}')
+print(f'bundle broadcast at block {block_number}')
 
 # wait for the transaction to get mined
 tx_id = signed_tx.hash
