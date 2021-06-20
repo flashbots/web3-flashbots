@@ -38,7 +38,7 @@ def get_gas_price():
     gas_api = "https://ethgasstation.info/json/ethgasAPI.json"
     response = requests.get(gas_api).json()
 
-    gas_multiplier = 10
+    gas_multiplier = 3
     gas_price_gwei = math.floor(response["fastest"] / 10 * gas_multiplier)
     gas_price = w3.toWei(gas_price_gwei, "gwei")
     return gas_price
