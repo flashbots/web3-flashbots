@@ -13,6 +13,9 @@ import math
 """
 In this example we setup a transaction for 0.1 eth with an appropriate gasprice.
 From here we will use Flashbots to pass a bundle with the needed content.
+
+NOTE: this example does not work on mainet / production since
+a flashbots bundle must use more than 42k gas to be valid.
 """
 
 if not os.environ.get("SEND_TO") or not os.environ.get("ETH_PRIVATE_KEY"):
