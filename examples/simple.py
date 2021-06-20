@@ -22,7 +22,7 @@ if not os.environ.get("SEND_TO") or not os.environ.get("ETH_PRIVATE_KEY"):
 # signifies your identify to the flashbots network
 FLASHBOTS_SIGNATURE: LocalAccount = Account.create()
 ETH_ACCOUNT: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_KEY"))
-SEND_TO: str = os.environ.get("SEND_TO")  # Eth address to send to
+SEND_TO: str = os.environ.get("SEND_TO")  # eth address to send to
 
 print("connecting to RPC")
 w3 = Web3(HTTPProvider("http://localhost:8545"))
@@ -31,9 +31,10 @@ flashbot(w3, FLASHBOTS_SIGNATURE)
 
 print(f"account {ETH_ACCOUNT.address}: {w3.eth.get_balance(ETH_ACCOUNT.address)} wei")
 
-# the bribe is contained in the gas price when not using a custom smart contract.
-# it must be high enough to make all the transactions in the bundle have a
-# competative affective average gas price
+# the bribe can be paid either via gas price or coinbase.transfer() in a contract.
+# here we use gas. it must be high enough to make all the transactions in the 
+# bundle have a competitive effective gas price. see more about this here: 
+# https://docs.flashbots.net/flashbots-core/searchers/advanced/bundle-pricing/
 def get_gas_price():
     gas_api = "https://ethgasstation.info/json/ethgasAPI.json"
     response = requests.get(gas_api).json()
@@ -54,10 +55,13 @@ tx: TxParams = {
 }
 tx["gas"] = math.floor(w3.eth.estimate_gas(tx) * 1.2)
 signed_tx = ETH_ACCOUNT.sign_transaction(tx)
-print(f"created transasction {signed_tx.hash.hex()}")
+print(f'created transaction {signed_tx.hash.hex()}')
 print(tx)
 
-# create a flashbots bundle
+# create a flashbots bundle.
+# bundles will be dropped / filtered in production if
+# 1. your bundle uses < 42k gas total
+# 2. you have another tx with the same nonce in the mempool
 bundle = [
     {"signed_transaction": signed_tx.rawTransaction},
     # you can include other transactions in the bundle
