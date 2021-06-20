@@ -32,8 +32,8 @@ flashbot(w3, FLASHBOTS_SIGNATURE)
 print(f"account {ETH_ACCOUNT.address}: {w3.eth.get_balance(ETH_ACCOUNT.address)} wei")
 
 # the bribe can be paid either via gas price or coinbase.transfer() in a contract.
-# here we use gas. it must be high enough to make all the transactions in the 
-# bundle have a competitive effective gas price. see more about this here: 
+# here we use gas. it must be high enough to make all the transactions in the
+# bundle have a competitive effective gas price. see more about this here:
 # https://docs.flashbots.net/flashbots-core/searchers/advanced/bundle-pricing/
 def get_gas_price():
     gas_api = "https://ethgasstation.info/json/ethgasAPI.json"
@@ -55,7 +55,7 @@ tx: TxParams = {
 }
 tx["gas"] = math.floor(w3.eth.estimate_gas(tx) * 1.2)
 signed_tx = ETH_ACCOUNT.sign_transaction(tx)
-print(f'created transaction {signed_tx.hash.hex()}')
+print(f"created transaction {signed_tx.hash.hex()}")
 print(tx)
 
 # create a flashbots bundle.
@@ -73,7 +73,7 @@ bundle = [
 block_number = w3.eth.block_number
 for i in range(1, 3):
     w3.flashbots.send_bundle(bundle, target_block_number=block_number + i)
-print(f'bundle broadcasted at block {block_number}')
+print(f"bundle broadcasted at block {block_number}")
 
 # wait for the transaction to get mined
 while True:
@@ -85,5 +85,5 @@ while True:
         if w3.eth.block_number >= (block_number + 3):
             print("ERROR: transaction was not mined")
             exit(1)
-        
-print(f'transaction confirmed at block {w3.eth.block_number}')
+
+print(f"transaction confirmed at block {w3.eth.block_number}")
