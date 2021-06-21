@@ -179,6 +179,7 @@ class Flashbots(ModuleV2):
             "bundleHash": call_result["bundleHash"],
             "coinbaseDiff": call_result["coinbaseDiff"],
             "results": call_result["results"],
+            "signedBundledTransactions": signed_bundled_transactions,
             "totalGasUsed": reduce(
                 lambda a, b: a + b["gasUsed"], call_result["results"], 0
             ),
