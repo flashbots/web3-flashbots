@@ -2,7 +2,7 @@ from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.method import Method
-from web3.module import ModuleV2
+from web3.module import Module
 from web3.types import RPCEndpoint, Nonce, _Hash32
 from typing import Any, List, Optional, Callable, Union
 from functools import reduce
@@ -51,7 +51,7 @@ class FlashbotsTransactionResponse:
         )
 
 
-class Flashbots(ModuleV2):
+class Flashbots(Module):
     signed_txs: List[HexBytes]
     response: FlashbotsTransactionResponse
 

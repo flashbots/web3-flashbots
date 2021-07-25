@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "flashbots"
-version = "0.4.3"
+version = "0.4.4"
 description = ""
 readme = "README.md"
 authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0k0@hacky.software>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-web3 = "~5.17.0"
+web3 = ">=5.19.0, <6"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
