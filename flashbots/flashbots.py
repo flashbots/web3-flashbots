@@ -119,6 +119,12 @@ class Flashbots(ModuleV2):
 
         return signed_transactions
 
+    def to_hex(self, signed_transaction: bytes) -> str:
+        tx_hex = signed_transaction.hex()
+        if tx_hex[0:2] != '0x':
+            tx_hex = f"0x{tx_hex}"
+        return tx_hex
+
     def send_raw_bundle_munger(
         self,
         signed_bundled_transactions: List[HexBytes],
@@ -129,7 +135,7 @@ class Flashbots(ModuleV2):
         # convert to hex
         return [
             {
-                "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
+                "txs": list(map(lambda x: self.to_hex(x), signed_bundled_transactions)),
                 "blockNumber": hex(target_block_number),
                 "minTimestamp": opts["minTimestamp"] if opts else 0,
                 "maxTimestamp": opts["maxTimestamp"] if opts else 0,
