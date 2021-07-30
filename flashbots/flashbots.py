@@ -12,7 +12,7 @@ from .types import (
     FlashbotsOpts,
     FlashbotsBundleRawTx,
     FlashbotsBundleTx,
-    FlashbotsBundleDictTx
+    FlashbotsBundleDictTx,
 )
 import time
 
@@ -121,7 +121,7 @@ class Flashbots(ModuleV2):
 
     def to_hex(self, signed_transaction: bytes) -> str:
         tx_hex = signed_transaction.hex()
-        if tx_hex[0:2] != '0x':
+        if tx_hex[0:2] != "0x":
             tx_hex = f"0x{tx_hex}"
         return tx_hex
 
@@ -144,8 +144,7 @@ class Flashbots(ModuleV2):
         ]
 
     sendRawBundle: Method[Callable[[Any], Any]] = Method(
-        FlashbotsRPC.eth_sendBundle,
-        mungers=[send_raw_bundle_munger],
+        FlashbotsRPC.eth_sendBundle, mungers=[send_raw_bundle_munger]
     )
     send_raw_bundle = sendRawBundle
 
@@ -247,6 +246,5 @@ class Flashbots(ModuleV2):
         return inpt
 
     call_bundle: Method[Callable[[Any], Any]] = Method(
-        json_rpc_method=FlashbotsRPC.eth_callBundle,
-        mungers=[call_bundle_munger],
+        json_rpc_method=FlashbotsRPC.eth_callBundle, mungers=[call_bundle_munger]
     )
