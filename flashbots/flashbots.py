@@ -110,7 +110,7 @@ class Flashbots(ModuleV2):
                         gas=tx["gas"],
                         gasPrice=tx["gasPrice"],
                         nonce=tx["nonce"],
-                        to=HexBytes(tx["to"]),
+                        to=HexBytes(tx["to"]) if "to" in tx else None,
                         value=tx["value"],
                     ),
                     (v, r, s),
