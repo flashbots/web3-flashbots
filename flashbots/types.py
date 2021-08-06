@@ -1,6 +1,7 @@
 from eth_account.account import Account
 from web3.types import TxParams
 from typing import TypedDict, List
+from hexbytes import HexBytes
 
 FlashbotsBundleTx = TypedDict(
     "FlashbotsBundleTx",
@@ -14,6 +15,27 @@ FlashbotsBundleRawTx = TypedDict(
     "FlashbotsBundleRawTx",
     {
         "signed_transaction": str,
+    },
+)
+
+FlashbotsBundleDictTx = TypedDict(
+    "FlashbotsBundleDictTx",
+    {
+        "blockHash": HexBytes,
+        "blockNumber": int,
+        "from": str,
+        "gas": int,
+        "gasPrice": int,
+        "hash": HexBytes,
+        "input": str,
+        "nonce": int,
+        "r": HexBytes,
+        "s": HexBytes,
+        "to": str,
+        "transactionIndex": int,
+        "type": str,
+        "v": int,
+        "value": int,
     },
 )
 
