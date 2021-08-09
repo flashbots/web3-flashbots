@@ -7,7 +7,7 @@ authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0
 
 [tool.poetry.dependencies]
 python = "^3.9"
-web3 = "~5.17.0"
+web3 = ">=5.19.0, <6"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
