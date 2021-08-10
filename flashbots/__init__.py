@@ -16,7 +16,7 @@ DEFAULT_FLASHBOTS_RELAY = "https://relay.flashbots.net"
 def flashbot(
     w3: Web3,
     signature_account: LocalAccount,
-    endpoint_uri: Optional[Union[URI, str]] = None
+    endpoint_uri: Optional[Union[URI, str]] = None,
 ):
     """
     Injects the flashbots module and middleware to w3.
