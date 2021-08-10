@@ -2,12 +2,18 @@ from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.method import Method
-from web3.module import ModuleV2
+from web3.module import Module
 from web3.types import RPCEndpoint, Nonce, _Hash32
 from typing import Any, List, Optional, Callable, Union
 from functools import reduce
+from eth_account._utils.legacy_transactions import Transaction, encode_transaction
 
-from .types import FlashbotsOpts, FlashbotsBundleRawTx, FlashbotsBundleTx
+from .types import (
+    FlashbotsOpts,
+    FlashbotsBundleRawTx,
+    FlashbotsBundleTx,
+    FlashbotsBundleDictTx,
+)
 import time
 
 SECONDS_PER_BLOCK = 15
@@ -51,25 +57,23 @@ class FlashbotsTransactionResponse:
         )
 
 
-class Flashbots(ModuleV2):
+class Flashbots(Module):
     signed_txs: List[HexBytes]
     response: FlashbotsTransactionResponse
 
     def sign_bundle(
         self,
-        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
+        bundled_transactions: List[
+            Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
+        ],
     ) -> List[HexBytes]:
         """ Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces = {}
         signed_transactions = []
         for tx in bundled_transactions:
-            # if it's not given a signer, we assume it's a signed RLP encoded tx,
-            if "signer" not in tx:
-                # TODO: Figure out how to decode a raw transaction with RLP
-                # decoded_tx = rlp.decode(tx["signed_transaction"], sedes=BaseTransactionFields)
-                # nonces[decoded_tx["from"]] = decoded_tx["nonce"] + 1
+            if "signed_transaction" in tx:
                 signed_transactions.append(tx["signed_transaction"])
-            else:
+            elif "signer" in tx:
                 # set all the fields
                 signer = tx["signer"]
                 tx = tx["transaction"]
@@ -90,8 +94,36 @@ class Flashbots(ModuleV2):
                 # sign the tx
                 signed_tx = signer.sign_transaction(tx)
                 signed_transactions.append(signed_tx.rawTransaction)
+            elif all(key in tx for key in ["v", "r", "s"]):
+                # transaction dict taken from w3.eth.get_block('pending', full_transactions=True)
+                v, r, s = (
+                    tx["v"],
+                    int(tx["r"].hex(), base=16),
+                    int(tx["s"].hex(), base=16),
+                )
+                raw = encode_transaction(
+                    Transaction(
+                        v=v,
+                        r=r,
+                        s=s,
+                        data=HexBytes(tx["input"]),
+                        gas=tx["gas"],
+                        gasPrice=tx["gasPrice"],
+                        nonce=tx["nonce"],
+                        to=HexBytes(tx["to"]) if "to" in tx else None,
+                        value=tx["value"],
+                    ),
+                    (v, r, s),
+                )
+                signed_transactions.append(raw)
 
         return signed_transactions
+
+    def to_hex(self, signed_transaction: bytes) -> str:
+        tx_hex = signed_transaction.hex()
+        if tx_hex[0:2] != "0x":
+            tx_hex = f"0x{tx_hex}"
+        return tx_hex
 
     def send_raw_bundle_munger(
         self,
@@ -103,7 +135,7 @@ class Flashbots(ModuleV2):
         # convert to hex
         return [
             {
-                "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
+                "txs": list(map(lambda x: self.to_hex(x), signed_bundled_transactions)),
                 "blockNumber": hex(target_block_number),
                 "minTimestamp": opts["minTimestamp"] if opts else 0,
                 "maxTimestamp": opts["maxTimestamp"] if opts else 0,
@@ -112,8 +144,7 @@ class Flashbots(ModuleV2):
         ]
 
     sendRawBundle: Method[Callable[[Any], Any]] = Method(
-        FlashbotsRPC.eth_sendBundle,
-        mungers=[send_raw_bundle_munger],
+        FlashbotsRPC.eth_sendBundle, mungers=[send_raw_bundle_munger]
     )
     send_raw_bundle = sendRawBundle
 
@@ -215,6 +246,5 @@ class Flashbots(ModuleV2):
         return inpt
 
     call_bundle: Method[Callable[[Any], Any]] = Method(
-        json_rpc_method=FlashbotsRPC.eth_callBundle,
-        mungers=[call_bundle_munger],
+        json_rpc_method=FlashbotsRPC.eth_callBundle, mungers=[call_bundle_munger]
     )
