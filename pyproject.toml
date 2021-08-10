@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flashbots"
-version = "0.4.4"
+version = "1.0.0"
 description = ""
 readme = "README.md"
 authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0k0@hacky.software>"]
