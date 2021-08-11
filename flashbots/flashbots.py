@@ -23,6 +23,7 @@ class FlashbotsRPC:
     eth_sendBundle = RPCEndpoint("eth_sendBundle")
     eth_callBundle = RPCEndpoint("eth_callBundle")
     flashbots_getUserStats = RPCEndpoint("flashbots_getUserStats")
+    flashbots_getBundleStats = RPCEndpoint("flashbots_getBundleStats")
 
 
 class FlashbotsTransactionResponse:
@@ -259,3 +260,19 @@ class Flashbots(Module):
     )
 
     get_user_stats = getUserStats
+
+    def get_bundle_stats_munger(
+        self, bundle_hash: Union[str, int], block_number: Union[str, int]
+    ) -> List:
+        if isinstance(bundle_hash, int):
+            bundle_hash = hex(bundle_hash)
+        if isinstance(block_number, int):
+            block_number = hex(block_number)
+        return [{"bundleHash": bundle_hash, "blockNumber": block_number}]
+
+    getBundleStats: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.flashbots_getBundleStats,
+        mungers=[get_bundle_stats_munger],
+    )
+
+    get_bundle_stats = getBundleStats
