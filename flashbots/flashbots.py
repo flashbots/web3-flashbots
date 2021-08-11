@@ -22,6 +22,7 @@ SECONDS_PER_BLOCK = 15
 class FlashbotsRPC:
     eth_sendBundle = RPCEndpoint("eth_sendBundle")
     eth_callBundle = RPCEndpoint("eth_callBundle")
+    flashbots_getUserStats = RPCEndpoint("flashbots_getUserStats")
 
 
 class FlashbotsTransactionResponse:
@@ -248,3 +249,13 @@ class Flashbots(Module):
     call_bundle: Method[Callable[[Any], Any]] = Method(
         json_rpc_method=FlashbotsRPC.eth_callBundle, mungers=[call_bundle_munger]
     )
+
+    def get_user_stats_munger(self) -> List:
+        return [{"blockNumber": hex(self.web3.eth.blockNumber)}]
+
+    getUserStats: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.flashbots_getUserStats,
+        mungers=[get_user_stats_munger],
+    )
+
+    get_user_stats = getUserStats

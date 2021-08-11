@@ -5,10 +5,7 @@ from web3.types import RPCEndpoint, RPCResponse
 from typing import Any
 from .provider import FlashbotProvider
 
-FLASHBOTS_METHODS = [
-    "eth_sendBundle",
-    "eth_callBundle",
-]
+FLASHBOTS_METHODS = ["eth_sendBundle", "eth_callBundle", "flashbots_getUserStats"]
 
 
 def construct_flashbots_middleware(
