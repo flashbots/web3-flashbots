@@ -32,7 +32,7 @@ print(
     f"To account {ETH_ACCOUNT_TO.address}: {w3.eth.get_balance(ETH_ACCOUNT_TO.address)}"
 )
 
-# Setting up an transaction with 1 in gasPrice where we are trying to send
+# Setting up a transaction with 1 in gasPrice where we are trying to send
 print("Sending request")
 params: TxParams = {
     "from": ETH_ACCOUNT_FROM.address,
