@@ -5,10 +5,13 @@ from typing import Any, Dict, List, Optional, Callable, Union
 
 from eth_account import Account
 from eth_account._utils.legacy_transactions import (
-    Transaction, encode_transaction, serializable_unsigned_transaction_from_dict
+    Transaction,
+    encode_transaction,
+    serializable_unsigned_transaction_from_dict,
 )
 from eth_account._utils.typed_transactions import (
-    AccessListTransaction, DynamicFeeTransaction
+    AccessListTransaction,
+    DynamicFeeTransaction,
 )
 from eth_typing import HexStr
 from hexbytes import HexBytes
@@ -90,7 +93,8 @@ class Flashbots(Module):
 
                 if tx.get("nonce") is None:
                     tx["nonce"] = nonces.get(
-                        signer.address, self.web3.eth.get_transaction_count(signer.address)
+                        signer.address,
+                        self.web3.eth.get_transaction_count(signer.address),
                     )
                 nonces[signer.address] = tx["nonce"] + 1
 
@@ -112,7 +116,6 @@ class Flashbots(Module):
 
                 tx_dict = {
                     "nonce": tx["nonce"],
-                    "chainId": tx.get("chainId"),  # FIXME: setting to None might not be a good idea
                     "to": HexBytes(tx["to"]) if "to" in tx else None,
                     "data": HexBytes(tx["input"]),
                     "value": tx["value"],
@@ -121,7 +124,8 @@ class Flashbots(Module):
 
                 if "maxFeePerGas" in tx and "maxPriorityFeePerGas" in tx:
                     tx_dict["maxFeePerGas"], tx_dict["maxPriorityFeePerGas"] = (
-                        tx["maxFeePerGas"], tx["maxPriorityFeePerGas"]
+                        tx["maxFeePerGas"],
+                        tx["maxPriorityFeePerGas"],
                     )
                 else:
                     tx_dict["gasPrice"] = tx["gasPrice"]
