@@ -43,7 +43,7 @@ def main() -> None:
         "maxFeePerGas": Web3.toWei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
         "nonce": nonce,
-        "chainId": 1,  
+        "chainId": 1,
     }
     tx1_signed = sender.sign_transaction(tx1)
 

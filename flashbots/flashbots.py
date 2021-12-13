@@ -1,6 +1,6 @@
-from functools import reduce
 import rlp
 import time
+from functools import reduce
 from typing import Any, Dict, List, Optional, Callable, Union
 
 from eth_account import Account
