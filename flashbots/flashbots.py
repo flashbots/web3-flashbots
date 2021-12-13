@@ -98,9 +98,6 @@ class Flashbots(Module):
                     )
                 nonces[signer.address] = tx["nonce"] + 1
 
-                if tx.get("type") == 0 or "gasPrice" in tx:
-                    tx["gasPrice"] = tx.get("gasPrice", 0)
-
                 if "gas" not in tx:
                     tx["gas"] = self.web3.eth.estimateGas(tx)
 
