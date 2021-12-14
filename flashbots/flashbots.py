@@ -77,7 +77,7 @@ class Flashbots(Module):
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
         ],
     ) -> List[HexBytes]:
-        """Given a bundle of signed and unsigned transactions, it signs them all"""
+        """ Given a bundle of signed and unsigned transactions, it signs them all """
         nonces: Dict[HexStr, Nonce] = {}
         signed_transactions: List[HexBytes] = []
 
@@ -286,7 +286,7 @@ def _parse_signed_tx(signed_tx: HexBytes) -> TxParams:
             raise ValueError(f"Unknown transaction type: {tx_type}.")
         decoded_tx = rlp.decode(signed_tx[1:], sedes).as_dict()
 
-    # recover sender address and remove signatrue fields
+    # recover sender address and remove signature fields
     decoded_tx["from"] = Account.recover_transaction(signed_tx)
     decoded_tx = dissoc(decoded_tx, "v", "r", "s")
     return decoded_tx
