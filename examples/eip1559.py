@@ -28,8 +28,12 @@ def main() -> None:
     w3 = Web3(HTTPProvider(env("PROVIDER")))
     flashbot(w3, signature, env("FLASHBOTS_HTTP_PROVIDER_URI"))
 
-    print(f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH")
-    print(f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiver.address), 'ether')} ETH")
+    print(
+        f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH"
+    )
+    print(
+        f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiver.address), 'ether')} ETH"
+    )
 
     # bundle two EIP-1559 (type 2) transactions, pre-sign one of them
     # NOTE: chainId is necessary for all EIP-1559 txns
@@ -65,7 +69,9 @@ def main() -> None:
     block = w3.eth.block_number
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-        results.append(w3.flashbots.send_bundle(bundle, target_block_number=target_block))
+        results.append(
+            w3.flashbots.send_bundle(bundle, target_block_number=target_block)
+        )
     print(f"Bundle sent to miners in block {block}")
 
     # wait for the results
@@ -76,9 +82,13 @@ def main() -> None:
     except TransactionNotFound:
         print("Bundle was not executed")
         return
-    
-    print(f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH")
-    print(f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiver.address), 'ether')} ETH")
+
+    print(
+        f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH"
+    )
+    print(
+        f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiver.address), 'ether')} ETH"
+    )
 
 
 if __name__ == "__main__":
