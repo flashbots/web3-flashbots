@@ -113,22 +113,29 @@ class Flashbots(Module):
 
                 tx_dict = {
                     "nonce": tx["nonce"],
-                    "to": HexBytes(tx["to"]) if "to" in tx else None,
                     "data": HexBytes(tx["input"]),
                     "value": tx["value"],
                     "gas": tx["gas"],
                 }
 
-                if "maxFeePerGas" in tx and "maxPriorityFeePerGas" in tx:
+                if "maxFeePerGas" in tx or "maxPriorityFeePerGas" in tx:
+                    assert "maxFeePerGas" in tx and "maxPriorityFeePerGas" in tx
                     tx_dict["maxFeePerGas"], tx_dict["maxPriorityFeePerGas"] = (
                         tx["maxFeePerGas"],
                         tx["maxPriorityFeePerGas"],
                     )
                 else:
+                    assert "gasPrice" in tx
                     tx_dict["gasPrice"] = tx["gasPrice"]
 
                 if tx.get("accessList"):
                     tx_dict["accessList"] = tx["accessList"]
+
+                if tx.get("chainId"):
+                    tx_dict["chainId"] = tx["chainId"]
+
+                if tx.get("to"):
+                    tx_dict["to"] = HexBytes(tx["to"])
 
                 unsigned_tx = serializable_unsigned_transaction_from_dict(tx_dict)
                 raw = encode_transaction(unsigned_tx, vrs=(v, r, s))

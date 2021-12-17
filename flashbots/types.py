@@ -26,8 +26,10 @@ FlashbotsBundleRawTx = TypedDict(
 FlashbotsBundleDictTx = TypedDict(
     "FlashbotsBundleDictTx",
     {
+        "accessList": list,
         "blockHash": HexBytes,
         "blockNumber": int,
+        "chainId": str,
         "from": str,
         "gas": int,
         "gasPrice": int,
@@ -44,6 +46,7 @@ FlashbotsBundleDictTx = TypedDict(
         "v": int,
         "value": int,
     },
+    total=False,
 )
 
 FlashbotsOpts = TypedDict(
