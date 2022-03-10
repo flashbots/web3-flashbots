@@ -73,7 +73,7 @@ def main() -> None:
     block = w3.eth.block_number
     
     try:
-        sim_result = w3.flashbots.simulate(bundle, block+1)
+        sim_result = w3.flashbots.simulate(bundle, block)
         print("sim result", sim_result)
     except Exception as e:
         print("sim error", e)
