@@ -60,7 +60,7 @@ def main() -> None:
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
         "nonce": nonce + 1,
         "chainId": 1,
-        "type": 2
+        "type": 2,
     }
 
     bundle = [
@@ -68,10 +68,9 @@ def main() -> None:
         {"signer": sender, "transaction": tx2},
     ]
 
-
     # send bundle to be executed in the next 5 blocks
     block = w3.eth.block_number
-    
+
     try:
         sim_result = w3.flashbots.simulate(bundle, block)
         print("sim result", sim_result)
