@@ -197,7 +197,7 @@ class Flashbots(Module):
 
     def simulate(
         self,
-        bundled_transactions,
+        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
         block_tag: int = None,
         state_block_tag: int = None,
         block_timestamp: int = None,

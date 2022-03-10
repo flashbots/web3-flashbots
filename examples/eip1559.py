@@ -18,15 +18,15 @@ def env(key: str) -> str:
 
 def main() -> None:
     # account to send the transfer and sign transactions
-    sender: LocalAccount = Account.from_key(env("SENDER_PRIVATE_KEY"))
+    sender: LocalAccount = Account.from_key(env("ETH_SIGNATURE_KEY"))
     # account to receive the transfer
-    receiver: LocalAccount = Account.from_key(env("RECEIVER_PRIVATE_KEY"))
+    receiver: LocalAccount = Account.from_key(env("ETH_SIGNATURE_KEY"))
     # account to establish flashbots reputation
     # NOTE: it should not store funds
-    signature: LocalAccount = Account.from_key(env("SIGNATURE_PRIVATE_KEY"))
+    signature: LocalAccount = Account.from_key(env("ETH_SIGNATURE_KEY"))
 
-    w3 = Web3(HTTPProvider(env("PROVIDER")))
-    flashbot(w3, signature, env("FLASHBOTS_HTTP_PROVIDER_URI"))
+    w3 = Web3(HTTPProvider("http://localhost:8545"))
+    flashbot(w3, signature)
 
     print(
         f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH"
@@ -48,16 +48,19 @@ def main() -> None:
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
         "nonce": nonce,
         "chainId": 1,
+        "type": 2,
     }
     tx1_signed = sender.sign_transaction(tx1)
 
     tx2: TxParams = {
         "to": receiver.address,
         "value": Web3.toWei(0.01, "ether"),
-        "gas": 25000,
+        "gas": 25001,
         "maxFeePerGas": Web3.toWei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+        "nonce": nonce + 1,
         "chainId": 1,
+        "type": 2
     }
 
     bundle = [
@@ -65,16 +68,24 @@ def main() -> None:
         {"signer": sender, "transaction": tx2},
     ]
 
+
     # send bundle to be executed in the next 5 blocks
     block = w3.eth.block_number
+    
+    try:
+        sim_result = w3.flashbots.simulate(bundle, block+1)
+        print("sim result", sim_result)
+    except Exception as e:
+        print("sim error", e)
+
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
         results.append(
             w3.flashbots.send_bundle(bundle, target_block_number=target_block)
         )
-    print(f"Bundle sent to miners in block {block}")
+        print(f"Bundle sent to miners in block {target_block}")
 
-    # wait for the results
+    # wait for all results
     results[-1].wait()
     try:
         receipt = results[-1].receipts()
