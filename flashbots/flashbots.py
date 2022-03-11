@@ -1,4 +1,3 @@
-from ast import Num
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
