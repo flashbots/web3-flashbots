@@ -3,7 +3,7 @@ authors = ["Georgios Konstantopoulos <me@gakonst.com>", "Nikolas Papaioannou <n0
 description = ""
 name = "flashbots"
 readme = "README.md"
-version = "1.0.1"
+version = "1.0.0"
 
 [tool.poetry.dependencies]
 python = "^3.9"
