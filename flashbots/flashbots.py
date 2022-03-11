@@ -1,3 +1,4 @@
+from ast import Num
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
@@ -22,6 +23,8 @@ SECONDS_PER_BLOCK = 15
 class FlashbotsRPC:
     eth_sendBundle = RPCEndpoint("eth_sendBundle")
     eth_callBundle = RPCEndpoint("eth_callBundle")
+    eth_sendPrivateTransaction = RPCEndpoint("eth_sendPrivateTransaction")
+    eth_cancelPrivateTransaction = RPCEndpoint("eth_cancelPrivateTransaction")
 
 
 class FlashbotsTransactionResponse:
@@ -45,12 +48,12 @@ class FlashbotsTransactionResponse:
         self.target_block_number = target_block_number
 
     def wait(self) -> None:
-        """ Waits until the target block has been reached """
+        """Waits until the target block has been reached"""
         while self.w3.eth.blockNumber < self.target_block_number:
             time.sleep(1)
 
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
-        """ Returns all the transaction receipts from the submitted bundle """
+        """Returns all the transaction receipts from the submitted bundle"""
         self.wait()
         return list(
             map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle)
@@ -67,7 +70,7 @@ class Flashbots(Module):
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
         ],
     ) -> List[HexBytes]:
-        """ Given a bundle of signed and unsigned transactions, it signs them all"""
+        """Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces = {}
         signed_transactions = []
         for tx in bundled_transactions:
@@ -131,7 +134,7 @@ class Flashbots(Module):
         target_block_number: int,
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
-        """ Given a raw signed bundle, it packages it up with the block numbre and the timestamps """
+        """Given a raw signed bundle, it packages it up with the block numbre and the timestamps"""
         # convert to hex
         return [
             {
@@ -234,7 +237,7 @@ class Flashbots(Module):
         evm_timestamp,
         opts: Optional[FlashbotsOpts] = None,
     ) -> Any:
-        """ Given a raw signed bundle, it packages it up with the block number and the timestamps """
+        """Given a raw signed bundle, it packages it up with the block number and the timestamps"""
         inpt = [
             {
                 "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
@@ -248,3 +251,54 @@ class Flashbots(Module):
     call_bundle: Method[Callable[[Any], Any]] = Method(
         json_rpc_method=FlashbotsRPC.eth_callBundle, mungers=[call_bundle_munger]
     )
+
+    # sends private transaction
+    # returns tx hash
+    def send_private_transaction_munger(
+        self,
+        transaction: Union[FlashbotsBundleTx, FlashbotsBundleRawTx],
+        max_block_number: Optional[int] = None,
+    ) -> str:
+        print("sending private tx")
+        signed_transaction: str
+        if "signed_transaction" in transaction:
+            signed_transaction = transaction["signed_transaction"]
+        else:
+            signed_transaction = self.to_hex(
+                transaction["signer"]
+                .sign_transaction(transaction["transaction"])
+                .rawTransaction
+            )
+        if max_block_number is None:
+            # get current block num, add 25
+            current_block = self.web3.eth.block_number
+            max_block_number = current_block + 25
+        params = {
+            "tx": signed_transaction,
+            "maxBlockNumber": max_block_number,
+        }
+        return [params]
+
+    sendPrivateTransaction: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.eth_sendPrivateTransaction,
+        mungers=[send_private_transaction_munger],
+    )
+    send_private_transaction = sendPrivateTransaction
+
+    # cancels private tx given pending private tx hash
+    # returns True if successful, False otherwise
+    def cancel_private_transaction_munger(
+        self,
+        tx_hash: str,
+    ) -> bool:
+        print("finna cancel this tx", tx_hash)
+        params = {
+            "txHash": tx_hash,
+        }
+        return [params]
+
+    cancelPrivateTransaction: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.eth_cancelPrivateTransaction,
+        mungers=[cancel_private_transaction_munger],
+    )
+    cancel_private_transaction = cancelPrivateTransaction

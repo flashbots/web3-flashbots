@@ -16,8 +16,8 @@ From here we will use Flashbots to pass a bundle with the needed content
 ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(
     os.environ.get("ETH_SIGNATURE_KEY")
 )
-ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_FROM"))
-ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_TO"))
+ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
+ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
 
 print("Connecting to RPC")
 # Setup w3 and flashbots
