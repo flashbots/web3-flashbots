@@ -258,7 +258,6 @@ class Flashbots(Module):
         transaction: Union[FlashbotsBundleTx, FlashbotsBundleRawTx],
         max_block_number: Optional[int] = None,
     ) -> str:
-        print("sending private tx")
         signed_transaction: str
         if "signed_transaction" in transaction:
             signed_transaction = transaction["signed_transaction"]
@@ -290,7 +289,6 @@ class Flashbots(Module):
         self,
         tx_hash: str,
     ) -> bool:
-        print("finna cancel this tx", tx_hash)
         params = {
             "txHash": tx_hash,
         }
