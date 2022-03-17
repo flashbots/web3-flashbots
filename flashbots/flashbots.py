@@ -258,6 +258,9 @@ class Flashbots(Module):
         transaction: Union[FlashbotsBundleTx, FlashbotsBundleRawTx],
         max_block_number: Optional[int] = None,
     ) -> str:
+        """Sends a single transaction to Flashbots.
+
+        If `max_block_number` is set, Flashbots will try to submit the transaction in every block <= that block (max 25 blocks from present)."""
         signed_transaction: str
         if "signed_transaction" in transaction:
             signed_transaction = transaction["signed_transaction"]
@@ -289,6 +292,9 @@ class Flashbots(Module):
         self,
         tx_hash: str,
     ) -> bool:
+        """Stops a private transaction from being sent to miners by Flashbots.
+
+        Note: if a transaction has already been received by a miner, it may still be mined. This simply stops further submissions."""
         params = {
             "txHash": tx_hash,
         }
