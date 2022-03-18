@@ -56,7 +56,7 @@ class FlashbotsBundleResponse:
         """Returns all the transaction receipts from the submitted bundle"""
         self.wait()
         return list(
-            map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle)
+            map(lambda tx: self.w3.eth.get_transaction_receipt(tx["hash"]), self.bundle)
         )
 
 
@@ -89,7 +89,7 @@ class FlashbotsPrivateTransactionResponse:
     def receipt(self) -> Optional[TxReceipt]:
         """Gets private tx receipt if tx has been mined. If tx is not mined within `max_block_number` period, returns None."""
         if self.wait():
-            return self.w3.eth.getTransactionReceipt(self.tx["hash"])
+            return self.w3.eth.get_transaction_receipt(self.tx["hash"])
         else:
             return None
 
