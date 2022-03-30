@@ -116,7 +116,7 @@ class Flashbots(Module):
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
         ],
     ) -> List[HexBytes]:
-        """ Given a bundle of signed and unsigned transactions, it signs them all """
+        """Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces: Dict[HexStr, Nonce] = {}
         signed_transactions: List[HexBytes] = []
 
@@ -371,6 +371,7 @@ class Flashbots(Module):
         mungers=[cancel_private_transaction_munger],
     )
     cancel_private_transaction = cancelPrivateTransaction
+
 
 def _parse_signed_tx(signed_tx: HexBytes) -> TxParams:
     # decode tx params based on its type
