@@ -1,12 +1,25 @@
+import rlp
+import time
+from functools import reduce
+from typing import Any, Dict, List, Optional, Callable, Union
+
+from eth_account import Account
+from eth_account._utils.legacy_transactions import (
+    Transaction,
+    encode_transaction,
+    serializable_unsigned_transaction_from_dict,
+)
+from eth_account._utils.typed_transactions import (
+    AccessListTransaction,
+    DynamicFeeTransaction,
+)
 from eth_typing import HexStr
 from hexbytes import HexBytes
+from toolz import dissoc
 from web3 import Web3
 from web3.method import Method
 from web3.module import Module
-from web3.types import RPCEndpoint, Nonce, _Hash32
-from typing import Any, List, Optional, Callable, Union
-from functools import reduce
-from eth_account._utils.legacy_transactions import Transaction, encode_transaction
+from web3.types import RPCEndpoint, Nonce, TxParams, _Hash32
 
 from .types import (
     FlashbotsOpts,
@@ -14,7 +27,7 @@ from .types import (
     FlashbotsBundleTx,
     FlashbotsBundleDictTx,
 )
-import time
+
 
 SECONDS_PER_BLOCK = 15
 
@@ -32,13 +45,10 @@ class FlashbotsTransactionResponse:
     def __init__(self, w3: Web3, txs: List[HexBytes], target_block_number: int):
         self.w3 = w3
 
-        # TODO: Parse them instead
-        # TODO: Add type
         def parse_tx(tx):
             return {
                 "signed_transaction": tx,
-                "hash": self.w3.sha3(tx),
-                # todo, decode and add account/nonce
+                "hash": self.w3.keccak(tx),
             }
 
         self.bundle = list(map(parse_tx, txs))
@@ -67,54 +77,69 @@ class Flashbots(Module):
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
         ],
     ) -> List[HexBytes]:
-        """ Given a bundle of signed and unsigned transactions, it signs them all"""
-        nonces = {}
-        signed_transactions = []
+        """ Given a bundle of signed and unsigned transactions, it signs them all """
+        nonces: Dict[HexStr, Nonce] = {}
+        signed_transactions: List[HexBytes] = []
+
         for tx in bundled_transactions:
-            if "signed_transaction" in tx:
+            if "signed_transaction" in tx:  # FlashbotsBundleRawTx
+                tx_params = _parse_signed_tx(tx["signed_transaction"])
+                nonces[tx_params["from"]] = tx_params["nonce"] + 1
                 signed_transactions.append(tx["signed_transaction"])
-            elif "signer" in tx:
-                # set all the fields
-                signer = tx["signer"]
-                tx = tx["transaction"]
-                if tx["nonce"] is None:
-                    nonce = nonces.get(signer.address) or Nonce(0)
-                    tx["nonce"] = nonce
-                else:
-                    nonce = tx["nonce"]
 
-                # store the new nonce
-                nonces[signer.address] = nonce + 1
-
-                # and update the tx details
+            elif "signer" in tx:  # FlashbotsBundleTx
+                signer, tx = tx["signer"], tx["transaction"]
                 tx["from"] = signer.address
-                tx["gasPrice"] = 0
+
+                if tx.get("nonce") is None:
+                    tx["nonce"] = nonces.get(
+                        signer.address,
+                        self.web3.eth.get_transaction_count(signer.address),
+                    )
+                nonces[signer.address] = tx["nonce"] + 1
+
                 if "gas" not in tx:
                     tx["gas"] = self.web3.eth.estimateGas(tx)
-                # sign the tx
+
                 signed_tx = signer.sign_transaction(tx)
                 signed_transactions.append(signed_tx.rawTransaction)
-            elif all(key in tx for key in ["v", "r", "s"]):
-                # transaction dict taken from w3.eth.get_block('pending', full_transactions=True)
+
+            elif all(key in tx for key in ["v", "r", "s"]):  # FlashbotsBundleDictTx
                 v, r, s = (
                     tx["v"],
                     int(tx["r"].hex(), base=16),
                     int(tx["s"].hex(), base=16),
                 )
-                raw = encode_transaction(
-                    Transaction(
-                        v=v,
-                        r=r,
-                        s=s,
-                        data=HexBytes(tx["input"]),
-                        gas=tx["gas"],
-                        gasPrice=tx["gasPrice"],
-                        nonce=tx["nonce"],
-                        to=HexBytes(tx["to"]) if "to" in tx else None,
-                        value=tx["value"],
-                    ),
-                    (v, r, s),
-                )
+
+                tx_dict = {
+                    "nonce": tx["nonce"],
+                    "data": HexBytes(tx["input"]),
+                    "value": tx["value"],
+                    "gas": tx["gas"],
+                }
+
+                if "maxFeePerGas" in tx or "maxPriorityFeePerGas" in tx:
+                    assert "maxFeePerGas" in tx and "maxPriorityFeePerGas" in tx
+                    tx_dict["maxFeePerGas"], tx_dict["maxPriorityFeePerGas"] = (
+                        tx["maxFeePerGas"],
+                        tx["maxPriorityFeePerGas"],
+                    )
+                else:
+                    assert "gasPrice" in tx
+                    tx_dict["gasPrice"] = tx["gasPrice"]
+
+                if tx.get("accessList"):
+                    tx_dict["accessList"] = tx["accessList"]
+
+                if tx.get("chainId"):
+                    tx_dict["chainId"] = tx["chainId"]
+
+                if tx.get("to"):
+                    tx_dict["to"] = HexBytes(tx["to"])
+
+                unsigned_tx = serializable_unsigned_transaction_from_dict(tx_dict)
+                raw = encode_transaction(unsigned_tx, vrs=(v, r, s))
+                assert self.web3.keccak(raw) == tx["hash"]
                 signed_transactions.append(raw)
 
         return signed_transactions
@@ -172,7 +197,7 @@ class Flashbots(Module):
 
     def simulate(
         self,
-        bundled_transactions,
+        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
         block_tag: int = None,
         state_block_tag: int = None,
         block_timestamp: int = None,
@@ -248,3 +273,27 @@ class Flashbots(Module):
     call_bundle: Method[Callable[[Any], Any]] = Method(
         json_rpc_method=FlashbotsRPC.eth_callBundle, mungers=[call_bundle_munger]
     )
+
+
+def _parse_signed_tx(signed_tx: HexBytes) -> TxParams:
+    # decode tx params based on its type
+    tx_type = signed_tx[0]
+    if tx_type > int("0x7f", 16):
+        # legacy and EIP-155 transactions
+        decoded_tx = rlp.decode(signed_tx, Transaction).as_dict()
+    else:
+        # typed transactions (EIP-2718)
+        if tx_type == 1:
+            # EIP-2930
+            sedes = AccessListTransaction._signed_transaction_serializer
+        elif tx_type == 2:
+            # EIP-1559
+            sedes = DynamicFeeTransaction._signed_transaction_serializer
+        else:
+            raise ValueError(f"Unknown transaction type: {tx_type}.")
+        decoded_tx = rlp.decode(signed_tx[1:], sedes).as_dict()
+
+    # recover sender address and remove signature fields
+    decoded_tx["from"] = Account.recover_transaction(signed_tx)
+    decoded_tx = dissoc(decoded_tx, "v", "r", "s")
+    return decoded_tx

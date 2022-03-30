@@ -1,14 +1,13 @@
 from typing import Union, Optional
 
 from eth_account.signers.local import LocalAccount
-from eth_keys.datatypes import PrivateKey
 from eth_typing import URI
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 from web3._utils.module import attach_modules
 
-from .middleware import construct_flashbots_middleware
 from .flashbots import Flashbots
+from .middleware import construct_flashbots_middleware
 from .provider import FlashbotProvider
 
 DEFAULT_FLASHBOTS_RELAY = "https://relay.flashbots.net"
