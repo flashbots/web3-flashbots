@@ -195,7 +195,7 @@ class Flashbots(Module):
         target_block_number: int,
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
-        """Given a raw signed bundle, it packages it up with the block numbre and the timestamps"""
+        """Given a raw signed bundle, it packages it up with the block number and the timestamps"""
         # convert to hex
         return [
             {
