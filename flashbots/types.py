@@ -1,8 +1,8 @@
-from typing import TypedDict, List
-
 from eth_account.signers.local import LocalAccount
+from eth_typing import HexStr
 from hexbytes import HexBytes
-from web3.types import TxParams
+from typing import TypedDict, List, Union
+from web3.types import TxParams, _Hash32
 
 
 # unsigned transaction
@@ -52,4 +52,32 @@ FlashbotsBundleDictTx = TypedDict(
 FlashbotsOpts = TypedDict(
     "FlashbotsOpts",
     {"minTimestamp": int, "maxTimestamp": int, "revertingTxHashes": List[str]},
+)
+
+
+# Type missing from eth_account, not really a part of flashbots web3 per sé
+SignTx = TypedDict(
+    "SignTx",
+    {
+        "nonce": int,
+        "chainId": int,
+        "to": str,
+        "data": str,
+        "value": int,
+        "gas": int,
+        "gasPrice": int,
+    },
+    total=False,
+)
+
+# type alias
+TxReceipt = Union[_Hash32, HexBytes, HexStr]
+
+# response from bundle or private tx submission
+SignedTxAndHash = TypedDict(
+    "SignedTxAndHash",
+    {
+        "signed_transaction": str,
+        "hash": HexBytes,
+    },
 )
