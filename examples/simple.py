@@ -1,9 +1,8 @@
+from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from web3.middleware import construct_sign_and_send_raw_middleware
 
 from flashbots import flashbot
-from flashbots.types import SignTx
-from eth_account.account import Account
 from web3 import Web3, HTTPProvider
 from web3.types import TxParams, Wei
 
@@ -16,13 +15,12 @@ From here we will use Flashbots to pass a bundle with the needed content
 ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(
     os.environ.get("ETH_SIGNATURE_KEY")
 )
-ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_FROM"))
-ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_PRIVATE_TO"))
+ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
+ETH_ACCOUNT_TO: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
 
 print("Connecting to RPC")
 # Setup w3 and flashbots
 w3 = Web3(HTTPProvider("http://localhost:8545"))
-w3.middleware_onion.add(construct_sign_and_send_raw_middleware(ETH_ACCOUNT_FROM))
 flashbot(w3, ETH_ACCOUNT_SIGNATURE)
 
 print(
@@ -32,7 +30,7 @@ print(
     f"To account {ETH_ACCOUNT_TO.address}: {w3.eth.get_balance(ETH_ACCOUNT_TO.address)}"
 )
 
-# Setting up an transaction with 1 in gasPrice where we are trying to send
+# Setting up a transaction with 1 in gasPrice where we are trying to send
 print("Sending request")
 params: TxParams = {
     "from": ETH_ACCOUNT_FROM.address,
@@ -59,7 +57,7 @@ print("Setting up flashbots request")
 nonce = w3.eth.get_transaction_count(ETH_ACCOUNT_FROM.address)
 bribe = w3.toWei("0.01", "ether")
 
-signed_tx: SignTx = {
+signed_tx: TxParams = {
     "to": ETH_ACCOUNT_TO.address,
     "value": bribe,
     "nonce": nonce + 1,

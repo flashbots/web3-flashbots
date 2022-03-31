@@ -2,13 +2,13 @@ import logging
 import os
 from typing import Any, Union, Optional
 
+from eth_account import Account, messages
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI
 from web3 import HTTPProvider
 from web3._utils.request import make_post_request
 from web3.types import RPCEndpoint, RPCResponse
 from web3 import Web3
-from eth_account import Account, messages
 
 
 def get_default_endpoint() -> URI:
