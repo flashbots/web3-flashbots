@@ -322,7 +322,6 @@ class Flashbots(Module):
         json_rpc_method=FlashbotsRPC.flashbots_getUserStats,
         mungers=[get_user_stats_munger],
     )
-
     get_user_stats = getUserStats
 
     def get_bundle_stats_munger(
