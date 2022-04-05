@@ -10,6 +10,8 @@ FLASHBOTS_METHODS = [
     "eth_callBundle",
     "eth_sendPrivateTransaction",
     "eth_cancelPrivateTransaction",
+    "flashbots_getBundleStats",
+    "flashbots_getUserStats",
 ]
 
 
