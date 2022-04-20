@@ -1,10 +1,19 @@
-# web3-flashbots
+Metadata-Version: 2.1
+Name: flashbots
+Version: 1.0.0
+Summary: flashbots client
+Author: Georgios Konstantopoulos
+Author-email: me@gakonst.com
+Requires-Python: >=3.9,<4.0
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: web3 (>=5.22.0,<6)
+Description-Content-Type: text/markdown
 
-This library works by injecting flashbots as a new module in the Web3.py instance, which allows
+This library works by injecting a new module in the Web3.py instance, which allows
 submitting "bundles" of transactions directly to miners. This is done by also creating
 a middleware which captures calls to `eth_sendBundle` and `eth_callBundle`, and sends
 them to an RPC endpoint which you have specified, which corresponds to `mev-geth`.
-
 To apply correct headers we use FlashbotProvider which injects the correct header on post.
 
 ## Example
@@ -25,7 +34,7 @@ flashbot(w3, ETH_ACCOUNT_SIGNATURE)
 
 Now the `w3.flashbots.sendBundle` method should be available to you. Look in `examples/simple.py` for usage examples
 
-## Development and testing
+# Development and testing
 
 Setup and run (mev-)geth with Websocket support:
 
@@ -35,7 +44,7 @@ geth --http --http.api eth,net,web3,txpool --syncmode full
 
 Install [poetry](https://python-poetry.org/)
 
-Poetry will automatically fix your venv and all packages needed.
+Poetry will automatically fix your venv and all packages needed
 
 ```sh
 poetry install
