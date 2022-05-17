@@ -13,7 +13,7 @@ from flashbots import flashbot
 from eth_account.account import Account
 import os
 
-ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNATURE_KEY"))
+ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(os.environ.get("ETH_SIGNER_KEY"))
 
 
 w3 = Web3(HTTPProvider("http://localhost:8545"))
