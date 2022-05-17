@@ -24,7 +24,7 @@ Now the `w3.flashbots.sendBundle` method should be available to you. Look in [ex
 
 ### Goerli
 
-To use goerli, add the goerli relay RPC to the `flashbot` call arguments.
+To use goerli, add the goerli relay RPC to the `flashbot` function arguments.
 
 ```python
 flashbot(w3, ETH_ACCOUNT_SIGNATURE, "https://relay-goerli.flashbots.net")
