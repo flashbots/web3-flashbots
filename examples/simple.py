@@ -11,7 +11,6 @@ Environment Variables:
 
 import os
 import secrets
-from time import sleep
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from flashbots import flashbot
