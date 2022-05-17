@@ -7,7 +7,7 @@ them to an RPC endpoint which you have specified, which corresponds to `mev-geth
 
 To apply correct headers we use FlashbotProvider which injects the correct header on post.
 
-## Example
+## Quickstart
 
 ```python
 from eth_account.signers.local import LocalAccount
@@ -23,15 +23,17 @@ w3 = Web3(HTTPProvider("http://localhost:8545"))
 flashbot(w3, ETH_ACCOUNT_SIGNATURE)
 ```
 
-Now the `w3.flashbots.sendBundle` method should be available to you. Look in `examples/simple.py` for usage examples
+Now the `w3.flashbots.sendBundle` method should be available to you. Look in [examples/simple.py](./examples/simple.py) for usage examples.
+
+### Goerli
+
+To use goerli, add the goerli relay RPC to the `flashbot` call arguments.
+
+```python
+flashbot(w3, ETH_ACCOUNT_SIGNATURE, "https://relay-goerli.flashbots.net")
+```
 
 ## Development and testing
-
-Setup and run (mev-)geth with Websocket support:
-
-```sh
-geth --http --http.api eth,net,web3,txpool --syncmode full
-```
 
 Install [poetry](https://python-poetry.org/)
 
@@ -42,6 +44,18 @@ poetry install
 ```
 
 Tips: PyCharm has a poetry plugin
+
+## Simple Goerli Example
+
+See [examples/simple.py](./examples/simple.py) for environment variable definitions.
+
+```sh
+poetry shell
+ETH_SENDER_KEY=<sender_private_key> \
+PROVIDER_URL=https://eth-goerli.alchemyapi.io/v2/<alchemy_key> \
+ETH_SIGNER_KEY=<signer_private_key> \
+python examples/simple.py
+```
 
 ## Linting
 
