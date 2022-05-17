@@ -1,11 +1,8 @@
 # web3-flashbots
 
-This library works by injecting flashbots as a new module in the Web3.py instance, which allows
-submitting "bundles" of transactions directly to miners. This is done by also creating
-a middleware which captures calls to `eth_sendBundle` and `eth_callBundle`, and sends
-them to an RPC endpoint which you have specified, which corresponds to `mev-geth`.
+This library works by injecting flashbots as a new module in the Web3.py instance, which allows submitting "bundles" of transactions directly to miners. This is done by also creating a middleware which captures calls to `eth_sendBundle` and `eth_callBundle`, and sends them to an RPC endpoint which you have specified, which corresponds to `mev-geth`.
 
-To apply correct headers we use FlashbotProvider which injects the correct header on post.
+To apply correct headers we use the `flashbot` method which injects the correct header on POST.
 
 ## Quickstart
 
