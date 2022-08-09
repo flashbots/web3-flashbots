@@ -48,6 +48,11 @@ class FlashbotProvider(HTTPProvider):
             "X-Flashbots-Signature": f"{self.signature_account.address}:{signed_message.signature.hex()}"
         }
 
+        if ("goerli" in self.endpoint_uri) and (method == "eth_sendPrivateTransaction"):
+            raise NotImplementedError(
+                "eth_sendPrivateTransaction is not supported on Goerli Endpoint"
+            )
+
         raw_response = make_post_request(
             self.endpoint_uri, request_data, headers=headers
         )
