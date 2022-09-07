@@ -1,3 +1,25 @@
+# zivoe-mev-mitigation
+
+This repository is responsible for fetching quotes from 1Inch APIs and automating calls to various contracts within the Zivoe protocol.
+
+This repository is forked from flashbots, the existing README information is retained below this section.
+
+All custom contracts implemented for the purpose of this repository are contained within the `/zivoe` directory.
+
+Requires a `.env` file instantiated locally as follows:
+```python
+KEEPER_0_PK=
+KEEPER_0_ADDY=
+SWAPPER_0_ADDY=
+INFURA_RPC_MAIN=
+INFURA_RPC_GOERLI=
+```
+Where `KEEPER_0_PK` is the private key of the KEEPER given permission via ZivoeGlobals and `KEEPER_0_ADDY` is the corresponding address.
+Where `SWAPPER_0_ADDY` is the contract address swapping assets (in live this will vary of course). 
+Where `INFURA_RPC_MAIN` and `INFURA_RPC_GOERLI` are Infura-based endpoints for communicating with corresponding networks.
+
+_Note: Do not add any spaces between values in the `.env`_
+
 # web3-flashbots
 
 This library works by injecting flashbots as a new module in the Web3.py instance, which allows submitting "bundles" of transactions directly to miners. This is done by also creating a middleware which captures calls to `eth_sendBundle` and `eth_callBundle`, and sends them to an RPC endpoint which you have specified, which corresponds to `mev-geth`.
