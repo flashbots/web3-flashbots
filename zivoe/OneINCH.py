@@ -20,9 +20,6 @@ class OneINCH:
         amount: str,
         complexity_level: str = '2'
     ) -> dict:
-        print(self.base_url + "/v4.0/1/quote")
-        print(from_token_address)
-        print(to_token_address)
         response = requests.request(
             "GET",
             self.base_url + "/v4.0/1/quote",
@@ -34,5 +31,28 @@ class OneINCH:
                 'complexityLevel': complexity_level,
             }
         )
-        print(response.json())
-        return {}
+        return response.json()
+
+    def get_swap(
+        self,
+        from_token_address: str,
+        to_token_address: str,
+        amount: str,
+        slippage: int = 1,
+        complexity_level: str = '2'
+    ) -> dict:
+        response = requests.request(
+            "GET",
+            self.base_url + "/v4.0/1/swap",
+            headers=self.headers_api,
+            params={
+                'fromTokenAddress': from_token_address,
+                'toTokenAddress': to_token_address,
+                'fromAddress': self.swapper_addy,
+                'disableEstimate': 'true',
+                'slippage': slippage,
+                'amount': amount,
+                'complexityLevel': complexity_level,
+            }
+        )
+        return response.json()

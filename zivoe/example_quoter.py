@@ -2,9 +2,23 @@ from asset_information import stablecoins
 from asset_information import assets
 from OneINCH import OneINCH
 
-quoter = OneINCH()
-quoter.get_quote(
-    assets['CVX'],
-    stablecoins['FRAX'],
-    str(100000 * 10**18)
+api = OneINCH()
+
+fromToken = assets['RLM']
+toToken = assets['WETH']
+amount = str(700 * 10**18)
+
+quote = api.get_quote(
+    fromToken,
+    toToken,
+    amount
 )
+
+swap = api.get_swap(
+    fromToken,
+    toToken,
+    amount
+)
+
+print(quote)
+print(swap)
