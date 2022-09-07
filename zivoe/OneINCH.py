@@ -18,14 +18,11 @@ class OneINCH:
         from_token_address: str,
         to_token_address: str,
         amount: str,
-        protocols: str = 'all',
-        fee: str = '1',
-        connector_tokens: int = 3,  # Max 5
-        complexity_level: int = 2
+        complexity_level: str = '2'
     ) -> dict:
         print(self.base_url + "/v4.0/1/quote")
-        print(self.from_token_address)
-        print(self.to_token_address)
+        print(from_token_address)
+        print(to_token_address)
         response = requests.request(
             "GET",
             self.base_url + "/v4.0/1/quote",
@@ -34,22 +31,8 @@ class OneINCH:
                 'fromTokenAddress': from_token_address,
                 'toTokenAddress': to_token_address,
                 'amount': amount,
-                # 'protocols': protocols,
-                # 'fee': fee,
-                # 'connectorTokens': connector_tokens,
                 'complexityLevel': complexity_level,
             }
         )
         print(response.json())
         return {}
-
-
-from EthereumAssets import stablecoins
-from EthereumAssets import assets
-
-testes = OneINCH()
-testes.get_quote(
-    assets['CRV'],
-    stablecoins['FRAX'],
-    str(100000 * 10**18)
-)
