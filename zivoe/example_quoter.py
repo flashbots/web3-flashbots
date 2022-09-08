@@ -22,3 +22,18 @@ swap = api.get_swap(
 
 print(quote)
 print(swap)
+
+
+
+'''
+struct SwapDescription {
+    IERC20 srcToken;
+    IERC20 dstToken;
+    address payable srcReceiver;
+    address payable dstReceiver;
+    uint256 amount;
+    uint256 minReturnAmount;
+    uint256 flags;
+    bytes permit;
+}
+'''
