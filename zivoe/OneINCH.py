@@ -33,13 +33,20 @@ class OneINCH:
         )
         return response.json()
 
+    def get_swap_low(
+        self, chain_id, token_in, token_out, amount, swap_proxy, slippage, destReceiver
+    ):
+        swap_req = requests.get(
+            f'https://api.1inch.exchange/v4.0/{chain_id}/swap?fromTokenAddress={token_in}&toTokenAddress={token_out}&amount={amount}&fromAddress={swap_proxy}&slippage={slippage}&destReceiver={destReceiver}&disableEstimate=true'
+        ).json()
+        return swap_req
+
     def get_swap(
         self,
         from_token_address: str,
         to_token_address: str,
         amount: str,
-        slippage: int = 1,
-        complexity_level: str = '2'
+        slippage: int = 0.3,
     ) -> dict:
         response = requests.request(
             "GET",
@@ -48,11 +55,10 @@ class OneINCH:
             params={
                 'fromTokenAddress': from_token_address,
                 'toTokenAddress': to_token_address,
-                'fromAddress': self.swapper_addy,
+                'fromAddress': "0x9fA34593Ea2b18bc48FD4604A6Cc49c92b337efe",
                 'disableEstimate': 'true',
                 'slippage': slippage,
                 'amount': amount,
-                'complexityLevel': complexity_level,
             }
         )
         return response.json()
