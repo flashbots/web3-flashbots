@@ -253,7 +253,7 @@ class Flashbots(Module):
         # sets evm params
         evm_block_number = self.web3.toHex(block_number)
         evm_block_state_number = (
-            state_block_tag
+            self.web3.toHex(state_block_tag)
             if state_block_tag is not None
             else self.web3.toHex(block_number - 1)
         )
