@@ -32,7 +32,7 @@ from .types import (
 )
 
 
-SECONDS_PER_BLOCK = 15
+SECONDS_PER_BLOCK = 12
 
 
 class FlashbotsRPC:
