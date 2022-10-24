@@ -42,6 +42,8 @@ class FlashbotsRPC:
     eth_cancelPrivateTransaction = RPCEndpoint("eth_cancelPrivateTransaction")
     flashbots_getBundleStats = RPCEndpoint("flashbots_getBundleStats")
     flashbots_getUserStats = RPCEndpoint("flashbots_getUserStats")
+    flashbots_getBundleStats_v2 = RPCEndpoint("flashbots_getBundleStats_v2")
+    flashbots_getUserStats_v2 = RPCEndpoint("flashbots_getUserStats_v2")
 
 
 class FlashbotsBundleResponse:
@@ -324,6 +326,12 @@ class Flashbots(Module):
     )
     get_user_stats = getUserStats
 
+    getUserStatsV2: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.flashbots_getUserStats_v2,
+        mungers=[get_user_stats_munger],
+    )
+    get_user_stats_v2 = getUserStatsV2
+
     def get_bundle_stats_munger(
         self, bundle_hash: Union[str, int], block_number: Union[str, int]
     ) -> List:
@@ -338,6 +346,12 @@ class Flashbots(Module):
         mungers=[get_bundle_stats_munger],
     )
     get_bundle_stats = getBundleStats
+
+    getBundleStatsV2: Method[Callable[[Any], Any]] = Method(
+        json_rpc_method=FlashbotsRPC.flashbots_getBundleStats_v2,
+        mungers=[get_bundle_stats_munger],
+    )
+    get_bundle_stats_v2 = getBundleStatsV2
 
     # sends private transaction
     # returns tx hash
