@@ -38,6 +38,7 @@ SECONDS_PER_BLOCK = 15
 class FlashbotsRPC:
     eth_sendBundle = RPCEndpoint("eth_sendBundle")
     eth_callBundle = RPCEndpoint("eth_callBundle")
+    eth_cancelBundle = RPCEndpoint("eth_cancelBundle")
     eth_sendPrivateTransaction = RPCEndpoint("eth_sendPrivateTransaction")
     eth_cancelPrivateTransaction = RPCEndpoint("eth_cancelPrivateTransaction")
     flashbots_getBundleStats = RPCEndpoint("flashbots_getBundleStats")
@@ -203,9 +204,12 @@ class Flashbots(Module):
             {
                 "txs": list(map(lambda x: self.to_hex(x), signed_bundled_transactions)),
                 "blockNumber": hex(target_block_number),
-                "minTimestamp": opts["minTimestamp"] if opts else 0,
-                "maxTimestamp": opts["maxTimestamp"] if opts else 0,
-                "revertingTxHashes": opts["revertingTxHashes"] if opts else [],
+                "minTimestamp": opts["minTimestamp"] if "minTimestamp" in opts else 0,
+                "maxTimestamp": opts["maxTimestamp"] if "maxTimestamp" in opts else 0,
+                "revertingTxHashes": opts["revertingTxHashes"]
+                if "revertingTxHashes" in opts
+                else [],
+                "userUuid": opts["bidId"] if "bidId" in opts else None,
             }
         ]
 
@@ -235,6 +239,26 @@ class Flashbots(Module):
         result_formatters=raw_bundle_formatter,
     )
     send_bundle = sendBundle
+
+    def cancel_bundles_munger(
+        self,
+        bid_id: str,
+    ) -> List[Any]:
+        return [
+            {
+                "userUuid": bid_id,
+            }
+        ]
+
+    def cancel_bundle_formatter(self, resp) -> Any:
+        return lambda res: {"bundleHashes": res}
+
+    cancelBundles: Method[Callable[[Any], Any]] = Method(
+        FlashbotsRPC.eth_cancelBundle,
+        mungers=[cancel_bundles_munger],
+        result_formatters=cancel_bundle_formatter,
+    )
+    cancel_bundles = cancelBundles
 
     def simulate(
         self,
