@@ -42,8 +42,8 @@ class FlashbotsRPC:
     eth_cancelPrivateTransaction = RPCEndpoint("eth_cancelPrivateTransaction")
     flashbots_getBundleStats = RPCEndpoint("flashbots_getBundleStats")
     flashbots_getUserStats = RPCEndpoint("flashbots_getUserStats")
-    flashbots_getBundleStats_v2 = RPCEndpoint("flashbots_getBundleStats_v2")
-    flashbots_getUserStats_v2 = RPCEndpoint("flashbots_getUserStats_v2")
+    flashbots_getBundleStatsV2 = RPCEndpoint("flashbots_getBundleStatsV2")
+    flashbots_getUserStatsV2 = RPCEndpoint("flashbots_getUserStatsV2")
 
 
 class FlashbotsBundleResponse:
@@ -74,6 +74,14 @@ class FlashbotsBundleResponse:
         return list(
             map(lambda tx: self.w3.eth.get_transaction_receipt(tx["hash"]), self.bundle)
         )
+
+    def bundle_hash(self) -> str:
+        """Calculates bundle hash"""
+        concat_hashes = reduce(
+            lambda a, b: a + b,
+            map(lambda tx: tx["hash"], self.bundle),
+        )
+        return self.w3.keccak(concat_hashes)
 
 
 class FlashbotsPrivateTransactionResponse:
@@ -327,7 +335,7 @@ class Flashbots(Module):
     get_user_stats = getUserStats
 
     getUserStatsV2: Method[Callable[[Any], Any]] = Method(
-        json_rpc_method=FlashbotsRPC.flashbots_getUserStats_v2,
+        json_rpc_method=FlashbotsRPC.flashbots_getUserStatsV2,
         mungers=[get_user_stats_munger],
     )
     get_user_stats_v2 = getUserStatsV2
@@ -348,7 +356,7 @@ class Flashbots(Module):
     get_bundle_stats = getBundleStats
 
     getBundleStatsV2: Method[Callable[[Any], Any]] = Method(
-        json_rpc_method=FlashbotsRPC.flashbots_getBundleStats_v2,
+        json_rpc_method=FlashbotsRPC.flashbots_getBundleStatsV2,
         mungers=[get_bundle_stats_munger],
     )
     get_bundle_stats_v2 = getBundleStatsV2

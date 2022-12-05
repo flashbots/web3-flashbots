@@ -12,6 +12,8 @@ FLASHBOTS_METHODS = [
     "eth_cancelPrivateTransaction",
     "flashbots_getBundleStats",
     "flashbots_getUserStats",
+    "flashbots_getBundleStatsV2",
+    "flashbots_getUserStatsV2",
 ]
 
 
