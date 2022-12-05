@@ -104,6 +104,18 @@ def main() -> None:
         # send bundle targeting next block
         print(f"Sending bundle targeting block {block+1}")
         send_result = w3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        print("bundleHash", w3.toHex(send_result.bundle_hash()))
+
+        stats_v1 = w3.flashbots.get_bundle_stats(
+            w3.toHex(send_result.bundle_hash()), block
+        )
+        print("bundleStats v1", stats_v1)
+
+        stats_v2 = w3.flashbots.get_bundle_stats_v2(
+            w3.toHex(send_result.bundle_hash()), block
+        )
+        print("bundleStats v2", stats_v2)
+
         send_result.wait()
         try:
             receipts = send_result.receipts()
