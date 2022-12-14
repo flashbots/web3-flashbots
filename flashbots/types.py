@@ -55,7 +55,7 @@ FlashbotsOpts = TypedDict(
         "minTimestamp": Optional[int],
         "maxTimestamp": Optional[int],
         "revertingTxHashes": Optional[List[str]],
-        "bidId": Optional[str],
+        "replacementUuid": Optional[str],
     },
 )
 

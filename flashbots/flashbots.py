@@ -209,7 +209,9 @@ class Flashbots(Module):
                 "revertingTxHashes": opts["revertingTxHashes"]
                 if "revertingTxHashes" in opts
                 else [],
-                "userUuid": opts["bidId"] if "bidId" in opts else None,
+                "replacementUuid": opts["replacementUuid"]
+                if "replacementUuid" in opts
+                else None,
             }
         ]
 
@@ -242,11 +244,11 @@ class Flashbots(Module):
 
     def cancel_bundles_munger(
         self,
-        bid_id: str,
+        replacement_uuid: str,
     ) -> List[Any]:
         return [
             {
-                "userUuid": bid_id,
+                "replacementUuid": replacement_uuid,
             }
         ]
 
