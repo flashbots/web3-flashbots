@@ -1,7 +1,7 @@
 from eth_account.signers.local import LocalAccount
 from eth_typing import HexStr
 from hexbytes import HexBytes
-from typing import TypedDict, List, Union
+from typing import TypedDict, List, Union, Optional
 from web3.types import TxParams, _Hash32
 
 
@@ -51,7 +51,12 @@ FlashbotsBundleDictTx = TypedDict(
 
 FlashbotsOpts = TypedDict(
     "FlashbotsOpts",
-    {"minTimestamp": int, "maxTimestamp": int, "revertingTxHashes": List[str]},
+    {
+        "minTimestamp": Optional[int],
+        "maxTimestamp": Optional[int],
+        "revertingTxHashes": Optional[List[str]],
+        "replacementUuid": Optional[str],
+    },
 )
 
 
