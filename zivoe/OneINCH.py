@@ -55,7 +55,30 @@ class OneINCH:
             params={
                 'fromTokenAddress': from_token_address,
                 'toTokenAddress': to_token_address,
-                'fromAddress': "0xce71065d4017f316ec606fe4422e11eb2c47c246",
+                'fromAddress': "0xD0EbE996f9d6EB7a93152f71e66cE89E950B2D88",
+                'disableEstimate': 'true',
+                'slippage': slippage,
+                'amount': amount,
+            }
+        )
+        return response.json()
+
+    def get_swap_specify_address(
+        self,
+        from_token_address: str,
+        to_token_address: str,
+        amount: str,
+        from_address: str,
+        slippage: int = 0.3,
+    ) -> dict:
+        response = requests.request(
+            "GET",
+            self.base_url + "/v4.0/1/swap",
+            headers=self.headers_api,
+            params={
+                'fromTokenAddress': from_token_address,
+                'toTokenAddress': to_token_address,
+                'fromAddress': from_address,
                 'disableEstimate': 'true',
                 'slippage': slippage,
                 'amount': amount,
