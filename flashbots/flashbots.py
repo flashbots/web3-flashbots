@@ -211,7 +211,7 @@ class Flashbots(Module):
         """Given a raw signed bundle, it packages it up with the block number and the timestamps"""
         
         if opts is None:
-            opts={}
+            opts = {}
         
         # convert to hex
         return [
