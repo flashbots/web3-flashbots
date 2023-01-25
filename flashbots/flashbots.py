@@ -209,6 +209,10 @@ class Flashbots(Module):
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
         """Given a raw signed bundle, it packages it up with the block number and the timestamps"""
+
+        if opts is None:
+            opts = {}
+
         # convert to hex
         return [
             {
