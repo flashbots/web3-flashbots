@@ -343,7 +343,7 @@ class Flashbots(Module):
         """Given a raw signed bundle, it packages it up with the block number and the timestamps"""
         inpt = [
             {
-                "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
+                "txs": list(map(lambda x: self.to_hex(x), signed_bundled_transactions)),
                 "blockNumber": evm_block_number,
                 "stateBlockNumber": evm_block_state_number,
                 "timestamp": evm_timestamp,
