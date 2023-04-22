@@ -4,9 +4,9 @@ from OneINCH import OneINCH
 
 api = OneINCH()
 
-fromToken = assets['CRV']
-toToken = stablecoins['DAI']
-amount = str(2000 * 10**18)
+fromToken = stablecoins['USDC']
+toToken = assets['WBTC']
+amount = str(5000000 * 10**6)
 
 quote = api.get_quote_v5(
     fromToken,
