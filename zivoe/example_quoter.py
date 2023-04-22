@@ -4,17 +4,17 @@ from OneINCH import OneINCH
 
 api = OneINCH()
 
-fromToken = stablecoins['DAI']
-toToken = stablecoins['FRAX']
-amount = str(5000 * 10**18)
+fromToken = assets['CRV']
+toToken = stablecoins['DAI']
+amount = str(2000 * 10**18)
 
-quote = api.get_quote(
+quote = api.get_quote_v5(
     fromToken,
     toToken,
     amount
 )
 
-swap = api.get_swap(
+swap = api.get_swap_v5(
     fromToken,
     toToken,
     amount
