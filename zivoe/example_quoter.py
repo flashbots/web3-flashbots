@@ -5,8 +5,8 @@ from OneINCH import OneINCH
 api = OneINCH()
 
 fromToken = stablecoins['USDC']
-toToken = assets['WBTC']
-amount = str(5000000 * 10**6)
+toToken = stablecoins['OUSD']
+amount = str(2000000 * 10**6)
 
 quote = api.get_quote_v5(
     fromToken,
