@@ -5,14 +5,16 @@ from OneINCH import OneINCH
 api = OneINCH()
 
 fromToken = stablecoins['USDC']
-toToken = stablecoins['OUSD']
-amount = str(2000000 * 10**6)
+toToken = stablecoins['DAI']
+amount = str(200000 * 10**6)
 
 quote = api.get_quote_v5(
     fromToken,
     toToken,
     amount
 )
+
+print(quote)
 
 swap = api.get_swap_v5(
     fromToken,
