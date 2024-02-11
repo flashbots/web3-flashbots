@@ -51,10 +51,10 @@ def main() -> None:
     print(f"Sender address: {sender.address}")
     print(f"Receiver address: {receiverAddress}")
     print(
-        f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH"
+        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
     )
     print(
-        f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
+        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
     )
 
     # bundle two EIP-1559 (type 2) transactions, pre-sign one of them
@@ -64,10 +64,10 @@ def main() -> None:
     nonce = w3.eth.get_transaction_count(sender.address)
     tx1: TxParams = {
         "to": receiverAddress,
-        "value": Web3.toWei(0.001, "ether"),
+        "value": Web3.to_wei(0.001, "ether"),
         "gas": 21000,
-        "maxFeePerGas": Web3.toWei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+        "maxFeePerGas": Web3.to_wei(200, "gwei"),
+        "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
         "nonce": nonce,
         "chainId": CHAIN_ID,
         "type": 2,
@@ -76,10 +76,10 @@ def main() -> None:
 
     tx2: TxParams = {
         "to": receiverAddress,
-        "value": Web3.toWei(0.001, "ether"),
+        "value": Web3.to_wei(0.001, "ether"),
         "gas": 21000,
-        "maxFeePerGas": Web3.toWei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
+        "maxFeePerGas": Web3.to_wei(200, "gwei"),
+        "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
         "nonce": nonce + 1,
         "chainId": CHAIN_ID,
         "type": 2,
@@ -111,15 +111,15 @@ def main() -> None:
             target_block_number=block + 1,
             opts={"replacementUuid": replacement_uuid},
         )
-        print("bundleHash", w3.toHex(send_result.bundle_hash()))
+        print("bundleHash", w3.to_hex(send_result.bundle_hash()))
 
         stats_v1 = w3.flashbots.get_bundle_stats(
-            w3.toHex(send_result.bundle_hash()), block
+            w3.to_hex(send_result.bundle_hash()), block
         )
         print("bundleStats v1", stats_v1)
 
         stats_v2 = w3.flashbots.get_bundle_stats_v2(
-            w3.toHex(send_result.bundle_hash()), block
+            w3.to_hex(send_result.bundle_hash()), block
         )
         print("bundleStats v2", stats_v2)
 
@@ -135,10 +135,10 @@ def main() -> None:
             print(f"canceled {cancel_res}")
 
     print(
-        f"Sender account balance: {Web3.fromWei(w3.eth.get_balance(sender.address), 'ether')} ETH"
+        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
     )
     print(
-        f"Receiver account balance: {Web3.fromWei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
+        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
     )
 
 
