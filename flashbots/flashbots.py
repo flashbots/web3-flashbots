@@ -95,7 +95,7 @@ class FlashbotsPrivateTransactionResponse:
         self.max_block_number = max_block_number
         self.tx = {
             "signed_transaction": signed_tx,
-            "hash": self.w3.sha3(signed_tx),
+            "hash": self.w3.keccak(signed_tx),
         }
 
     def wait(self) -> bool:
@@ -147,12 +147,12 @@ class Flashbots(Module):
                 if tx.get("nonce") is None:
                     tx["nonce"] = nonces.get(
                         signer.address,
-                        self.web3.eth.get_transaction_count(signer.address),
+                        self.w3.eth.get_transaction_count(signer.address),
                     )
                 nonces[signer.address] = tx["nonce"] + 1
 
                 if "gas" not in tx:
-                    tx["gas"] = self.web3.eth.estimateGas(tx)
+                    tx["gas"] = self.w3.eth.estimate_gas(tx)
 
                 signed_tx = signer.sign_transaction(tx)
                 signed_transactions.append(signed_tx.rawTransaction)
@@ -192,7 +192,7 @@ class Flashbots(Module):
 
                 unsigned_tx = serializable_unsigned_transaction_from_dict(tx_dict)
                 raw = encode_transaction(unsigned_tx, vrs=(v, r, s))
-                assert self.web3.keccak(raw) == tx["hash"]
+                assert self.w3.keccak(raw) == tx["hash"]
                 signed_transactions.append(raw)
 
         return signed_transactions
@@ -243,7 +243,7 @@ class Flashbots(Module):
     ) -> List[Any]:
         signed_txs = self.sign_bundle(bundled_transactions)
         self.response = FlashbotsBundleResponse(
-            self.web3, signed_txs, target_block_number
+            self.w3, signed_txs, target_block_number
         )
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
@@ -286,22 +286,22 @@ class Flashbots(Module):
     ):
         # interpret block number from tag
         block_number = (
-            self.web3.eth.block_number
+            self.w3.eth.block_number
             if block_tag is None or block_tag == "latest"
             else block_tag
         )
 
         # sets evm params
-        evm_block_number = self.web3.toHex(block_number)
+        evm_block_number = self.w3.to_hex(block_number)
         evm_block_state_number = (
-            self.web3.toHex(state_block_tag)
+            self.w3.to_hex(state_block_tag)
             if state_block_tag is not None
-            else self.web3.toHex(block_number - 1)
+            else self.w3.to_hex(block_number - 1)
         )
         evm_timestamp = (
             block_timestamp
             if block_timestamp is not None
-            else self.extrapolate_timestamp(block_number, self.web3.eth.block_number)
+            else self.extrapolate_timestamp(block_number, self.w3.eth.block_number)
         )
 
         signed_bundled_transactions = self.sign_bundle(bundled_transactions)
@@ -327,7 +327,7 @@ class Flashbots(Module):
         block_delta = block_tag - latest_block_number
         if block_delta < 0:
             raise Exception("block extrapolation negative")
-        return self.web3.eth.get_block(latest_block_number)["timestamp"] + (
+        return self.w3.eth.get_block(latest_block_number)["timestamp"] + (
             block_delta * SECONDS_PER_BLOCK
         )
 
@@ -357,7 +357,7 @@ class Flashbots(Module):
     )
 
     def get_user_stats_munger(self) -> List:
-        return [{"blockNumber": hex(self.web3.eth.blockNumber)}]
+        return [{"blockNumber": hex(self.w3.eth.block_number)}]
 
     getUserStats: Method[Callable[[Any], Any]] = Method(
         json_rpc_method=FlashbotsRPC.flashbots_getUserStats,
@@ -414,14 +414,14 @@ class Flashbots(Module):
             )
         if max_block_number is None:
             # get current block num, add 25
-            current_block = self.web3.eth.block_number
+            current_block = self.w3.eth.block_number
             max_block_number = current_block + 25
         params = {
             "tx": self.to_hex(signed_transaction),
             "maxBlockNumber": max_block_number,
         }
         self.response = FlashbotsPrivateTransactionResponse(
-            self.web3, signed_transaction, max_block_number
+            self.w3, signed_transaction, max_block_number
         )
         return [params]
 
