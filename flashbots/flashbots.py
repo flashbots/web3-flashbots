@@ -101,7 +101,8 @@ class FlashbotsPrivateTransactionResponse:
     def wait(self) -> bool:
         """Waits up to max block number, returns `True` if/when tx has been mined.
 
-        If tx has not been mined by the time the current block > max_block_number, returns `False`."""
+        If tx has not been mined by the time the current block > max_block_number, returns `False`.
+        """
         while True:
             try:
                 self.w3.eth.get_transaction(self.tx["hash"])
@@ -220,12 +221,12 @@ class Flashbots(Module):
                 "blockNumber": hex(target_block_number),
                 "minTimestamp": opts["minTimestamp"] if "minTimestamp" in opts else 0,
                 "maxTimestamp": opts["maxTimestamp"] if "maxTimestamp" in opts else 0,
-                "revertingTxHashes": opts["revertingTxHashes"]
-                if "revertingTxHashes" in opts
-                else [],
-                "replacementUuid": opts["replacementUuid"]
-                if "replacementUuid" in opts
-                else None,
+                "revertingTxHashes": (
+                    opts["revertingTxHashes"] if "revertingTxHashes" in opts else []
+                ),
+                "replacementUuid": (
+                    opts["replacementUuid"] if "replacementUuid" in opts else None
+                ),
             }
         ]
 
@@ -400,7 +401,8 @@ class Flashbots(Module):
     ) -> Any:
         """Sends a single transaction to Flashbots.
 
-        If `max_block_number` is set, Flashbots will try to submit the transaction in every block <= that block (max 25 blocks from present)."""
+        If `max_block_number` is set, Flashbots will try to submit the transaction in every block <= that block (max 25 blocks from present).
+        """
         signed_transaction: str
         if "signed_transaction" in transaction:
             signed_transaction = transaction["signed_transaction"]
@@ -438,7 +440,8 @@ class Flashbots(Module):
     ) -> bool:
         """Stops a private transaction from being sent to miners by Flashbots.
 
-        Note: if a transaction has already been received by a miner, it may still be mined. This simply stops further submissions."""
+        Note: if a transaction has already been received by a miner, it may still be mined. This simply stops further submissions.
+        """
         params = {
             "txHash": tx_hash,
         }
