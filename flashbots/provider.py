@@ -41,7 +41,7 @@ class FlashbotProvider(HTTPProvider):
             text=Web3.keccak(text=request_data.decode("utf-8")).hex()
         )
         signed_message = Account.sign_message(
-            message, private_key=self.signature_account.privateKey.hex()
+            message, private_key=self.signature_account._private_key
         )
 
         headers = self.get_request_headers() | {
