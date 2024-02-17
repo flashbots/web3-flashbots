@@ -7,7 +7,7 @@ Author-email: me@gakonst.com
 Requires-Python: >=3.9,<4.0
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.9
-Requires-Dist: web3 (>=5.22.0,<6)
+Requires-Dist: web3 (>=6,<7)
 Description-Content-Type: text/markdown
 
 This library works by injecting a new module in the Web3.py instance, which allows
