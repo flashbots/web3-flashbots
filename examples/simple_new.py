@@ -20,8 +20,8 @@ from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 # change this to `False` if you want to use mainnet
-USE_GOERLI = True
-CHAIN_ID = 5 if USE_GOERLI else 1
+USE_SEPOLIA = True
+CHAIN_ID = 11155111 if USE_SEPOLIA else 1
 
 
 def env(key: str) -> str:
@@ -43,8 +43,21 @@ def main() -> None:
     signer: LocalAccount = Account.from_key(env("ETH_SIGNER_KEY"))
 
     w3 = Web3(HTTPProvider(env("PROVIDER_URL")))
-    if USE_GOERLI:
-        flashbot(w3, signer, "https://relay-goerli.flashbots.net")
+
+    """
+        "eth_sendBundle" is a generic method that can be used to send a bundle to any relay.
+        For instance, you can use the following relay URLs:
+            titan: 'https://rpc.titanbuilder.xyz/'
+            beaver: 'https://rpc.beaverbuild.org/'
+            builder69: 'https://builder0x69.io/'
+            rsync: 'https://rsync-builder.xyz/'
+            flashbots: 'https://relay.flashbots.net'
+        
+        You can simply replace the URL in the flashbot method to use a different relay like:
+            flashbot(w3, signer, "https://rpc.titanbuilder.xyz/")
+    """
+    if USE_SEPOLIA:
+        flashbot(w3, signer, "https://relay-sepolia.flashbots.net")
     else:
         flashbot(w3, signer)
 
@@ -94,10 +107,12 @@ def main() -> None:
     while True:
         block = w3.eth.block_number
 
-        # Simulation is not supported on Goerli now
-        if not USE_GOERLI:
+        # Simulation is only supported on mainnet
+        if not USE_SEPOLIA:
             print(f"Simulating on block {block}")
-            # simulate bundle on current block
+            # Simulate bundle on current block.
+            # If your RPC provider is not fast enough, you may get "block extrapolation negative"
+            # error message triggered by "extrapolate_timestamp" function in "flashbots.py".
             try:
                 w3.flashbots.simulate(bundle, block)
                 print("Simulation successful.")
