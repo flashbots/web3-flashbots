@@ -43,6 +43,19 @@ def main() -> None:
     signer: LocalAccount = Account.from_key(env("ETH_SIGNER_KEY"))
 
     w3 = Web3(HTTPProvider(env("PROVIDER_URL")))
+
+    """
+        "eth_sendBundle" is a generic method that can be used to send a bundle to any relay.
+        For instance, you can use the following relay URLs:
+            titan: 'https://rpc.titanbuilder.xyz/'
+            beaver: 'https://rpc.beaverbuild.org/'
+            builder69: 'https://builder0x69.io/'
+            rsync: 'https://rsync-builder.xyz/'
+            flashbots: 'https://relay.flashbots.net'
+        
+        You can simply replace the URL in the flashbot method to use a different relay like:
+            flashbot(w3, signer, "https://rpc.titanbuilder.xyz/")
+    """
     if USE_SEPOLIA:
         flashbot(w3, signer, "https://relay-sepolia.flashbots.net")
     else:
@@ -97,7 +110,9 @@ def main() -> None:
         # Simulation is only supported on mainnet
         if not USE_SEPOLIA:
             print(f"Simulating on block {block}")
-            # simulate bundle on current block
+            # Simulate bundle on current block.
+            # If your RPC provider is not fast enough, you may get "block extrapolation negative"
+            # error message triggered by "extrapolate_timestamp" function in "flashbots.py".
             try:
                 w3.flashbots.simulate(bundle, block)
                 print("Simulation successful.")
