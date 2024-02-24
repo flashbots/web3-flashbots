@@ -93,14 +93,17 @@ def main() -> None:
     # keep trying to send bundle until it gets mined
     while True:
         block = w3.eth.block_number
-        print(f"Simulating on block {block}")
-        # simulate bundle on current block
-        try:
-            w3.flashbots.simulate(bundle, block)
-            print("Simulation successful.")
-        except Exception as e:
-            print("Simulation error", e)
-            return
+
+        # Simulation is not supported on Goerli now
+        if not USE_GOERLI:
+            print(f"Simulating on block {block}")
+            # simulate bundle on current block
+            try:
+                w3.flashbots.simulate(bundle, block)
+                print("Simulation successful.")
+            except Exception as e:
+                print("Simulation error", e)
+                return
 
         # send bundle targeting next block
         print(f"Sending bundle targeting block {block+1}")
