@@ -5,16 +5,8 @@ from OneINCH import OneINCH
 api = OneINCH()
 
 fromToken = stablecoins['USDC']
-toToken = stablecoins['DAI']
-amount = str(200000 * 10**6)
-
-quote = api.get_quote_v5(
-    fromToken,
-    toToken,
-    amount
-)
-
-print(quote)
+toToken = stablecoins['PYUSD']
+amount = str(100_000 * 10**6)
 
 swap = api.get_swap_v5(
     fromToken,
@@ -23,20 +15,3 @@ swap = api.get_swap_v5(
 )
 
 print(swap)
-
-
-
-
-
-'''
-struct SwapDescription {
-    IERC20 srcToken;
-    IERC20 dstToken;
-    address payable srcReceiver;
-    address payable dstReceiver;
-    uint256 amount;
-    uint256 minReturnAmount;
-    uint256 flags;
-    bytes permit;
-}
-'''
