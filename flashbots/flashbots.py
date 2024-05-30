@@ -94,7 +94,7 @@ class FlashbotsPrivateTransactionResponse:
         self.max_block_number = max_block_number
         self.tx = {
             "signed_transaction": signed_tx,
-            "hash": self.w3.sha3(signed_tx),
+            "hash": self.w3.keccak(signed_tx),
         }
 
     def wait(self) -> bool:
