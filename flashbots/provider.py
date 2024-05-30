@@ -1,14 +1,13 @@
 import logging
 import os
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
 
 from eth_account import Account, messages
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI
-from web3 import HTTPProvider
+from web3 import HTTPProvider, Web3
 from web3._utils.request import make_post_request
 from web3.types import RPCEndpoint, RPCResponse
-from web3 import Web3
 
 
 def get_default_endpoint() -> URI:
@@ -41,7 +40,7 @@ class FlashbotProvider(HTTPProvider):
             text=Web3.keccak(text=request_data.decode("utf-8")).hex()
         )
         signed_message = Account.sign_message(
-            message, private_key=self.signature_account.privateKey.hex()
+            message, private_key=self.signature_account._private_key.hex()
         )
 
         headers = self.get_request_headers() | {
