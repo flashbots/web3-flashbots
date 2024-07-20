@@ -2,26 +2,57 @@
 Minimal viable example of flashbots usage with dynamic fee transactions.
 Sends a bundle of two transactions which transfer some ETH into a random account.
 
+"eth_sendBundle" is a generic method that can be used to send a bundle to any relay.
+For instance, you can use the following relay URLs:
+    titan: 'https://rpc.titanbuilder.xyz/'
+    beaver: 'https://rpc.beaverbuild.org/'
+    builder69: 'https://builder0x69.io/'
+    rsync: 'https://rsync-builder.xyz/'
+    flashbots: 'https://relay.flashbots.net'
+
+You can simply replace the URL in the flashbot method to use a different relay like:
+    flashbot(w3, signer, YOUR_CHOSEN_RELAY_URL)
+
 Environment Variables:
 - ETH_SENDER_KEY: Private key of account which will send the ETH.
 - ETH_SIGNER_KEY: Private key of account which will sign the bundle. 
     - This account is only used for reputation on flashbots and should be empty.
-- PROVIDER_URL: HTTP JSON-RPC Ethereum provider URL.
+- PROVIDER_URL: (Optional) HTTP JSON-RPC Ethereum provider URL. If not set, Flashbots Protect RPC will be used.
 """
 
 import os
 import secrets
 from uuid import uuid4
+
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from flashbots import flashbot
-from web3 import Web3, HTTPProvider
+from web3 import HTTPProvider, Web3
 from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
-# change this to `False` if you want to use mainnet
-USE_SEPOLIA = True
-CHAIN_ID = 11155111 if USE_SEPOLIA else 1
+from flashbots import flashbot
+
+# Define the network to use
+NETWORK = "holesky"  # Options: "sepolia", "holesky", "mainnet"
+
+# Define chain IDs and Flashbots Protect RPC URLs
+NETWORK_CONFIG = {
+    "sepolia": {
+        "chain_id": 11155111,
+        "provider_url": "https://rpc-sepolia.flashbots.net",
+        "relay_url": "https://relay-sepolia.flashbots.net",
+    },
+    "holesky": {
+        "chain_id": 17000,
+        "provider_url": "https://rpc-holesky.flashbots.net",
+        "relay_url": "https://relay-holesky.flashbots.net",
+    },
+    "mainnet": {
+        "chain_id": 1,
+        "provider_url": "https://rpc.flashbots.net",
+        "relay_url": None,  # Mainnet uses default Flashbots relay
+    },
+}
 
 
 def env(key: str) -> str:
@@ -42,22 +73,20 @@ def main() -> None:
     # NOTE: this account should not store funds
     signer: LocalAccount = Account.from_key(env("ETH_SIGNER_KEY"))
 
-    w3 = Web3(HTTPProvider(env("PROVIDER_URL")))
+    # Use user-provided RPC URL if available, otherwise use Flashbots Protect RPC
+    user_provider_url = env("PROVIDER_URL")
+    if user_provider_url:
+        provider_url = user_provider_url
+        print(f"Using user-provided RPC: {provider_url}")
+    else:
+        provider_url = NETWORK_CONFIG[NETWORK]["provider_url"]
+        print(f"Using Flashbots Protect RPC: {provider_url}")
 
-    """
-        "eth_sendBundle" is a generic method that can be used to send a bundle to any relay.
-        For instance, you can use the following relay URLs:
-            titan: 'https://rpc.titanbuilder.xyz/'
-            beaver: 'https://rpc.beaverbuild.org/'
-            builder69: 'https://builder0x69.io/'
-            rsync: 'https://rsync-builder.xyz/'
-            flashbots: 'https://relay.flashbots.net'
-        
-        You can simply replace the URL in the flashbot method to use a different relay like:
-            flashbot(w3, signer, "https://rpc.titanbuilder.xyz/")
-    """
-    if USE_SEPOLIA:
-        flashbot(w3, signer, "https://relay-sepolia.flashbots.net")
+    w3 = Web3(HTTPProvider(provider_url))
+
+    relay_url = NETWORK_CONFIG[NETWORK]["relay_url"]
+    if relay_url:
+        flashbot(w3, signer, relay_url)
     else:
         flashbot(w3, signer)
 
@@ -82,7 +111,7 @@ def main() -> None:
         "maxFeePerGas": Web3.toWei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
         "nonce": nonce,
-        "chainId": CHAIN_ID,
+        "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
         "type": 2,
     }
     tx1_signed = sender.sign_transaction(tx1)
@@ -94,7 +123,7 @@ def main() -> None:
         "maxFeePerGas": Web3.toWei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.toWei(50, "gwei"),
         "nonce": nonce + 1,
-        "chainId": CHAIN_ID,
+        "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
         "type": 2,
     }
 
@@ -108,7 +137,7 @@ def main() -> None:
         block = w3.eth.block_number
 
         # Simulation is only supported on mainnet
-        if not USE_SEPOLIA:
+        if NETWORK == "mainnet":
             print(f"Simulating on block {block}")
             # Simulate bundle on current block.
             # If your RPC provider is not fast enough, you may get "block extrapolation negative"
