@@ -24,6 +24,7 @@ import logging
 import os
 import secrets
 from uuid import uuid4
+from typing import Dict, Any
 
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
@@ -71,48 +72,36 @@ def random_account() -> LocalAccount:
     return Account.from_key(key)
 
 
-def main() -> None:
-    # account to send the transfer and sign transactions
-    sender: LocalAccount = Account.from_key(env("ETH_SENDER_KEY"))
-    # account to receive the transfer
-    receiverAddress: str = random_account().address
-    # account to sign bundles & establish flashbots reputation
-    # NOTE: this account should not store funds
-    signer: LocalAccount = Account.from_key(env("ETH_SIGNER_KEY"))
+def get_account_from_env(key: str) -> LocalAccount:
+    return Account.from_key(env(key))
 
-    # Use user-provided RPC URL if available, otherwise use Flashbots Protect RPC
-    user_provider_url = env("PROVIDER_URL")
-    if user_provider_url:
-        provider_url = user_provider_url
-        logger.info(f"Using user-provided RPC: {provider_url}")
-    else:
-        provider_url = NETWORK_CONFIG[NETWORK]["provider_url"]
-        logger.info(f"Using Flashbots Protect RPC: {provider_url}")
 
+def get_provider_url() -> str:
+    return env("PROVIDER_URL") or NETWORK_CONFIG[NETWORK]["provider_url"]
+
+
+def setup_web3() -> Web3:
+    provider_url = get_provider_url()
+    logger.info(f"Using RPC: {provider_url}")
     w3 = Web3(HTTPProvider(provider_url))
 
-    relay_url = NETWORK_CONFIG[NETWORK]["relay_url"]
-    if relay_url:
-        flashbot(w3, signer, relay_url)
-    else:
-        flashbot(w3, signer)
+    relay_url = NETWORK_CONFIG[NETWORK].get("relay_url")
+    flashbot(w3, get_account_from_env("ETH_SIGNER_KEY"), relay_url)
+    return w3
 
-    logger.info(f"Sender address: {sender.address}")
-    logger.info(f"Receiver address: {receiverAddress}")
+
+def log_account_balances(w3: Web3, sender: str, receiver: str) -> None:
     logger.info(
-        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
+        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender), 'ether')} ETH"
     )
     logger.info(
-        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
+        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiver), 'ether')} ETH"
     )
 
-    # bundle two EIP-1559 (type 2) transactions, pre-sign one of them
-    # NOTE: chainId is necessary for all EIP-1559 txns
-    # NOTE: nonce is required for signed txns
 
-    nonce = w3.eth.get_transaction_count(sender.address)
-    tx1: TxParams = {
-        "to": receiverAddress,
+def create_transaction(w3: Web3, sender: str, receiver: str, nonce: int) -> TxParams:
+    return {
+        "to": receiver,
         "value": Web3.to_wei(0.001, "ether"),
         "gas": 21000,
         "maxFeePerGas": Web3.to_wei(200, "gwei"),
@@ -121,19 +110,22 @@ def main() -> None:
         "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
         "type": 2,
     }
+
+
+def main() -> None:
+    sender = get_account_from_env("ETH_SENDER_KEY")
+    receiver = random_account().address
+    w3 = setup_web3()
+
+    logger.info(f"Sender address: {sender.address}")
+    logger.info(f"Receiver address: {receiver}")
+    log_account_balances(w3, sender.address, receiver)
+
+    nonce = w3.eth.get_transaction_count(sender.address)
+    tx1 = create_transaction(w3, sender.address, receiver, nonce)
+    tx2 = create_transaction(w3, sender.address, receiver, nonce + 1)
+
     tx1_signed = sender.sign_transaction(tx1)
-
-    tx2: TxParams = {
-        "to": receiverAddress,
-        "value": Web3.to_wei(0.001, "ether"),
-        "gas": 21000,
-        "maxFeePerGas": Web3.to_wei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
-        "nonce": nonce + 1,
-        "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
-        "type": 2,
-    }
-
     bundle = [
         {"signed_transaction": tx1_signed.rawTransaction},
         {"signer": sender, "transaction": tx2},
@@ -184,12 +176,7 @@ def main() -> None:
             cancel_res = w3.flashbots.cancel_bundles(replacement_uuid)
             logger.info(f"Canceled {cancel_res}")
 
-    logger.info(
-        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
-    )
-    logger.info(
-        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
-    )
+    log_account_balances(w3, sender.address, receiver)
 
 
 if __name__ == "__main__":
