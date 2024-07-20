@@ -4,3 +4,5 @@ __pycache__
 build/
 dist/
 flashbots.egg-info/
+.venv/
+.mise.toml
