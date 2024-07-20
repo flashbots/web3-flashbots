@@ -20,6 +20,7 @@ Environment Variables:
 - PROVIDER_URL: (Optional) HTTP JSON-RPC Ethereum provider URL. If not set, Flashbots Protect RPC will be used.
 """
 
+import logging
 import os
 import secrets
 from uuid import uuid4
@@ -31,6 +32,12 @@ from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 from flashbots import flashbot
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # Define the network to use
 NETWORK = "holesky"  # Options: "sepolia", "holesky", "mainnet"
@@ -77,10 +84,10 @@ def main() -> None:
     user_provider_url = env("PROVIDER_URL")
     if user_provider_url:
         provider_url = user_provider_url
-        print(f"Using user-provided RPC: {provider_url}")
+        logger.info(f"Using user-provided RPC: {provider_url}")
     else:
         provider_url = NETWORK_CONFIG[NETWORK]["provider_url"]
-        print(f"Using Flashbots Protect RPC: {provider_url}")
+        logger.info(f"Using Flashbots Protect RPC: {provider_url}")
 
     w3 = Web3(HTTPProvider(provider_url))
 
@@ -90,12 +97,12 @@ def main() -> None:
     else:
         flashbot(w3, signer)
 
-    print(f"Sender address: {sender.address}")
-    print(f"Receiver address: {receiverAddress}")
-    print(
+    logger.info(f"Sender address: {sender.address}")
+    logger.info(f"Receiver address: {receiverAddress}")
+    logger.info(
         f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
     )
-    print(
+    logger.info(
         f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
     )
 
@@ -138,53 +145,49 @@ def main() -> None:
 
         # Simulation is only supported on mainnet
         if NETWORK == "mainnet":
-            print(f"Simulating on block {block}")
             # Simulate bundle on current block.
             # If your RPC provider is not fast enough, you may get "block extrapolation negative"
             # error message triggered by "extrapolate_timestamp" function in "flashbots.py".
             try:
                 w3.flashbots.simulate(bundle, block)
-                print("Simulation successful.")
             except Exception as e:
-                print("Simulation error", e)
+                logger.error("Simulation error", e)
                 return
 
         # send bundle targeting next block
-        print(f"Sending bundle targeting block {block+1}")
         replacement_uuid = str(uuid4())
-        print(f"replacementUuid {replacement_uuid}")
+        logger.info(f"replacementUuid {replacement_uuid}")
         send_result = w3.flashbots.send_bundle(
             bundle,
             target_block_number=block + 1,
             opts={"replacementUuid": replacement_uuid},
         )
-        print("bundleHash", w3.to_hex(send_result.bundle_hash()))
+        logger.info(f"bundleHash {w3.to_hex(send_result.bundle_hash())}")
 
         stats_v1 = w3.flashbots.get_bundle_stats(
             w3.to_hex(send_result.bundle_hash()), block
         )
-        print("bundleStats v1", stats_v1)
+        logger.info(f"bundleStats v1 {stats_v1}")
 
         stats_v2 = w3.flashbots.get_bundle_stats_v2(
             w3.to_hex(send_result.bundle_hash()), block
         )
-        print("bundleStats v2", stats_v2)
+        logger.info(f"bundleStats v2 {stats_v2}")
 
         send_result.wait()
         try:
             receipts = send_result.receipts()
-            print(f"\nBundle was mined in block {receipts[0].blockNumber}\a")
+            logger.info(f"Bundle was mined in block {receipts[0].blockNumber}")
             break
         except TransactionNotFound:
-            print(f"Bundle not found in block {block+1}")
-            # essentially a no-op but it shows that the function works
+            logger.info(f"Bundle not found in block {block+1}")
             cancel_res = w3.flashbots.cancel_bundles(replacement_uuid)
-            print(f"canceled {cancel_res}")
+            logger.info(f"Canceled {cancel_res}")
 
-    print(
+    logger.info(
         f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender.address), 'ether')} ETH"
     )
-    print(
+    logger.info(
         f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiverAddress), 'ether')} ETH"
     )
 
