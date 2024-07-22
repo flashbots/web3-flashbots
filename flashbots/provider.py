@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Union, Optional, Dict
+from typing import Any, Dict, Optional, Union
 
 from eth_account import Account, messages
 from eth_account.signers.local import LocalAccount

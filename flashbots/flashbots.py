@@ -1,8 +1,9 @@
-import rlp
+import logging
 import time
 from functools import reduce
-from typing import Any, Dict, List, Optional, Callable, Union, Tuple
+from typing import Any, Callable, Dict, List, Optional, Union
 
+import rlp
 from eth_account import Account
 from eth_account._utils.legacy_transactions import (
     Transaction,
@@ -20,18 +21,16 @@ from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.method import Method
 from web3.module import Module
-from web3.types import RPCEndpoint, Nonce, TxParams
+from web3.types import Nonce, RPCEndpoint, TxParams
 
 from .types import (
-    FlashbotsOpts,
+    FlashbotsBundleDictTx,
     FlashbotsBundleRawTx,
     FlashbotsBundleTx,
-    FlashbotsBundleDictTx,
+    FlashbotsOpts,
     SignedTxAndHash,
     TxReceipt,
 )
-
-import logging
 
 SECONDS_PER_BLOCK = 12
 

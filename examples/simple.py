@@ -15,7 +15,7 @@ You can simply replace the URL in the flashbot method to use a different relay l
 
 Environment Variables:
 - ETH_SENDER_KEY: Private key of account which will send the ETH.
-- ETH_SIGNER_KEY: Private key of account which will sign the bundle. 
+- ETH_SIGNER_KEY: Private key of account which will sign the bundle.
     - This account is only used for reputation on flashbots and should be empty.
 - PROVIDER_URL: (Optional) HTTP JSON-RPC Ethereum provider URL. If not set, Flashbots Protect RPC will be used.
 """
@@ -24,7 +24,6 @@ import logging
 import os
 import secrets
 from uuid import uuid4
-from typing import Dict, Any
 
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount

@@ -1,9 +1,9 @@
+from typing import List, Optional, TypedDict, Union
+
 from eth_account.signers.local import LocalAccount
 from eth_typing import HexStr
 from hexbytes import HexBytes
-from typing import TypedDict, List, Union, Optional
 from web3.types import TxParams, _Hash32
-
 
 # unsigned transaction
 FlashbotsBundleTx = TypedDict(
