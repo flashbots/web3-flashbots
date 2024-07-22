@@ -29,9 +29,9 @@ from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from web3 import HTTPProvider, Web3
 from web3.exceptions import TransactionNotFound
-from web3.types import TxParams
+from web3.types import Nonce, TxParams
 
-from flashbots import flashbot
+from flashbots import FlashbotsWeb3, flashbot
 
 # Configure logging
 logging.basicConfig(
@@ -63,7 +63,10 @@ NETWORK_CONFIG = {
 
 
 def env(key: str) -> str:
-    return os.environ.get(key)
+    value = os.environ.get(key)
+    if value is None:
+        raise ValueError(f"Environment variable '{key}' is not set")
+    return value
 
 
 def random_account() -> LocalAccount:
@@ -79,22 +82,24 @@ def get_provider_url() -> str:
     return env("PROVIDER_URL") or NETWORK_CONFIG[NETWORK]["provider_url"]
 
 
-def setup_web3() -> Web3:
+def setup_web3() -> FlashbotsWeb3:
     provider_url = get_provider_url()
     logger.info(f"Using RPC: {provider_url}")
-    w3 = Web3(HTTPProvider(provider_url))
-
     relay_url = NETWORK_CONFIG[NETWORK].get("relay_url")
-    flashbot(w3, get_account_from_env("ETH_SIGNER_KEY"), relay_url)
+    w3 = flashbot(
+        Web3(HTTPProvider(provider_url)),
+        get_account_from_env("ETH_SIGNER_KEY"),
+        relay_url,
+    )
     return w3
 
 
 def log_account_balances(w3: Web3, sender: str, receiver: str) -> None:
     logger.info(
-        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(sender), 'ether')} ETH"
+        f"Sender account balance: {Web3.from_wei(w3.eth.get_balance(Web3.to_checksum_address(sender)), 'ether')} ETH"
     )
     logger.info(
-        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(receiver), 'ether')} ETH"
+        f"Receiver account balance: {Web3.from_wei(w3.eth.get_balance(Web3.to_checksum_address(receiver)), 'ether')} ETH"
     )
 
 
@@ -105,7 +110,7 @@ def create_transaction(w3: Web3, sender: str, receiver: str, nonce: int) -> TxPa
         "gas": 21000,
         "maxFeePerGas": Web3.to_wei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
-        "nonce": nonce,
+        "nonce": Nonce(nonce),
         "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
         "type": 2,
     }
@@ -127,7 +132,7 @@ def main() -> None:
     tx1_signed = sender.sign_transaction(tx1)
     bundle = [
         {"signed_transaction": tx1_signed.rawTransaction},
-        {"signer": sender, "transaction": tx2},
+        {"transaction": tx2, "signer": sender},
     ]
 
     # keep trying to send bundle until it gets mined
@@ -171,7 +176,7 @@ def main() -> None:
             logger.info(f"Bundle was mined in block {receipts[0].blockNumber}")
             break
         except TransactionNotFound:
-            logger.info(f"Bundle not found in block {block+1}")
+            logger.info(f"Bundle not found in block {block + 1}")
             cancel_res = w3.flashbots.cancel_bundles(replacement_uuid)
             logger.info(f"Canceled {cancel_res}")
 
