@@ -14,12 +14,12 @@ python = "^3.9"
 web3 = ">=6, <7"
 
 [tool.poetry.dev-dependencies]
-black = "^24"
+ruff = "^0.5.4"
 pytest-recording = "^0.11.0"
 vcrpy = "^4.1.1"
 
-[tool.black]
-line-length = 88
+[tool.ruff]
+target-version = "py312"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
