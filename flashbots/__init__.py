@@ -21,8 +21,30 @@ def flashbot(
     signature_account: LocalAccount,
     endpoint_uri: Optional[Union[URI, str]] = None,
 ) -> FlashbotsWeb3:
-    """
-    Injects the flashbots module and middleware to w3.
+    """Inject the Flashbots module and middleware into a Web3 instance.
+
+    This method enables sending bundles to various relays using "eth_sendBundle".
+
+    Args:
+        w3: The Web3 instance to modify.
+        signature_account: The account used for signing transactions.
+        endpoint_uri: The relay endpoint URI. Defaults to Flashbots relay.
+
+    Returns:
+        The modified Web3 instance with Flashbots functionality.
+
+    Examples:
+        Using default Flashbots relay:
+            >>> flashbot(w3, signer)
+
+        Using custom relay:
+            >>> flashbot(w3, signer, CUSTOM_RELAY_URL)
+
+    Available relay URLs:
+        - Titan: 'https://rpc.titanbuilder.xyz/'
+        - Beaver: 'https://rpc.beaverbuild.org/'
+        - Rsync: 'https://rsync-builder.xyz/'
+        - Flashbots: 'https://relay.flashbots.net' (default)
     """
 
     flashbots_provider = FlashbotProvider(signature_account, endpoint_uri)

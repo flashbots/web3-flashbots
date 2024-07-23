@@ -2,24 +2,25 @@
 Minimal viable example of flashbots usage with dynamic fee transactions.
 Sends a bundle of two transactions which transfer some ETH into a random account.
 
-"eth_sendBundle" is a generic method that can be used to send a bundle to any relay.
-For instance, you can use the following relay URLs:
-    titan: 'https://rpc.titanbuilder.xyz/'
-    beaver: 'https://rpc.beaverbuild.org/'
-    builder69: 'https://builder0x69.io/'
-    rsync: 'https://rsync-builder.xyz/'
-    flashbots: 'https://relay.flashbots.net'
-
-You can simply replace the URL in the flashbot method to use a different relay like:
-    flashbot(w3, signer, YOUR_CHOSEN_RELAY_URL)
-
 Environment Variables:
 - ETH_SENDER_KEY: Private key of account which will send the ETH.
 - ETH_SIGNER_KEY: Private key of account which will sign the bundle.
     - This account is only used for reputation on flashbots and should be empty.
 - PROVIDER_URL: (Optional) HTTP JSON-RPC Ethereum provider URL. If not set, Flashbots Protect RPC will be used.
+- LOG_LEVEL: (Optional) Set the logging level. Default is 'INFO'. Options: DEBUG, INFO, WARNING, ERROR, CRITICAL.
+
+Usage:
+python examples/simple.py <network> [--log-level LEVEL]
+
+Arguments:
+- network: The network to use (e.g., mainnet, goerli)
+- --log-level: (Optional) Set the logging level. Default is 'INFO'.
+
+Example:
+LOG_LEVEL=DEBUG python examples/simple.py mainnet --log-level DEBUG
 """
 
+import argparse
 import logging
 import os
 import secrets
@@ -32,17 +33,36 @@ from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 from flashbots import FlashbotsWeb3, flashbot
-from flashbots.constants import FLASHBOTS_NETWORKS
-from flashbots.types import NetworkType
+from flashbots.constants import FLASHBOTS_NETWORKS, get_networks
+from flashbots.types import Network
 
 # Configure logging
+log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=getattr(logging, log_level),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
 
-# Define the network to use
-NETWORK: NetworkType = "holesky"  # Options: "sepolia", "holesky", "mainnet"
+
+def parse_arguments() -> Network:
+    networks = get_networks()
+    parser = argparse.ArgumentParser(description="Flashbots simple example")
+    parser.add_argument(
+        "network",
+        type=str,
+        choices=networks,
+        help=f"The network to use ({', '.join(networks)})",
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        default="INFO",
+        help="Set the logging level",
+    )
+    args = parser.parse_args()
+    return args.network
 
 
 def env(key: str) -> str:
@@ -110,7 +130,7 @@ def create_transaction(
 
 
 def main() -> None:
-    network = NETWORK
+    network = parse_arguments()
     sender = get_account_from_env("ETH_SENDER_KEY")
     receiver = Account.create().address
     w3 = setup_web3(network)

@@ -257,6 +257,7 @@ class Flashbots(Module):
         mungers=[send_bundle_munger],
         result_formatters=raw_bundle_formatter,
     )
+
     send_bundle = sendBundle
 
     def cancel_bundles_munger(

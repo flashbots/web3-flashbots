@@ -88,7 +88,7 @@ SignedTxAndHash = TypedDict(
 )
 
 # Add the following new types
-NetworkType = Literal["sepolia", "holesky", "mainnet"]
+Network = Literal["sepolia", "holesky", "mainnet"]
 
 
 class NetworkConfig(TypedDict):
