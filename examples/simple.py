@@ -29,7 +29,7 @@ from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from web3 import HTTPProvider, Web3
 from web3.exceptions import TransactionNotFound
-from web3.types import Nonce, TxParams
+from web3.types import TxParams
 
 from flashbots import FlashbotsWeb3, flashbot
 from flashbots.constants import FLASHBOTS_NETWORKS
@@ -84,33 +84,46 @@ def log_account_balances(w3: Web3, sender: str, receiver: str) -> None:
     )
 
 
-def create_transaction(w3: Web3, sender: str, receiver: str, nonce: int) -> TxParams:
+def create_transaction(
+    w3: Web3, sender: str, receiver: str, nonce: int, network: str
+) -> TxParams:
+    # Get the latest gas price information
+    latest = w3.eth.get_block("latest")
+    base_fee = latest["baseFeePerGas"]
+
+    # Set max priority fee (tip) to 2 Gwei
+    max_priority_fee = Web3.to_wei(2, "gwei")
+
+    # Set max fee to be base fee + priority fee
+    max_fee = base_fee + max_priority_fee
+
     return {
+        "from": sender,
         "to": receiver,
-        "value": Web3.to_wei(0.001, "ether"),
         "gas": 21000,
-        "maxFeePerGas": Web3.to_wei(200, "gwei"),
-        "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
-        "nonce": Nonce(nonce),
-        "chainId": FLASHBOTS_NETWORKS[NETWORK]["chain_id"],
-        "type": 2,
+        "value": Web3.to_wei(0.001, "ether"),
+        "nonce": nonce,
+        "maxFeePerGas": max_fee,
+        "maxPriorityFeePerGas": max_priority_fee,
+        "chainId": FLASHBOTS_NETWORKS[network]["chain_id"],
     }
 
 
 def main() -> None:
+    network = NETWORK
     sender = get_account_from_env("ETH_SENDER_KEY")
-    receiver = random_account().address
-    w3 = setup_web3(NETWORK)
+    receiver = Account.create().address
+    w3 = setup_web3(network)
 
     logger.info(f"Sender address: {sender.address}")
     logger.info(f"Receiver address: {receiver}")
     log_account_balances(w3, sender.address, receiver)
 
     nonce = w3.eth.get_transaction_count(sender.address)
-    tx1 = create_transaction(w3, sender.address, receiver, nonce)
-    tx2 = create_transaction(w3, sender.address, receiver, nonce + 1)
+    tx1 = create_transaction(w3, sender.address, receiver, nonce, network)
+    tx2 = create_transaction(w3, sender.address, receiver, nonce + 1, network)
 
-    tx1_signed = sender.sign_transaction(tx1)
+    tx1_signed = w3.eth.account.sign_transaction(tx1, private_key=sender.key)
     bundle = [
         {"signed_transaction": tx1_signed.rawTransaction},
         {"transaction": tx2, "signer": sender},
@@ -121,14 +134,14 @@ def main() -> None:
         block = w3.eth.block_number
 
         # Simulation is only supported on mainnet
-        if NETWORK == "mainnet":
+        if network == "mainnet":
             # Simulate bundle on current block.
             # If your RPC provider is not fast enough, you may get "block extrapolation negative"
             # error message triggered by "extrapolate_timestamp" function in "flashbots.py".
             try:
                 w3.flashbots.simulate(bundle, block)
             except Exception as e:
-                logger.error("Simulation error", e)
+                logger.error(f"Simulation error: {e}")
                 return
 
         # send bundle targeting next block
