@@ -1,7 +1,7 @@
-from typing import List, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 
 from eth_account.signers.local import LocalAccount
-from eth_typing import HexStr
+from eth_typing import URI, HexStr
 from hexbytes import HexBytes
 from web3.types import TxParams, _Hash32
 
@@ -86,3 +86,12 @@ SignedTxAndHash = TypedDict(
         "hash": HexBytes,
     },
 )
+
+# Add the following new types
+NetworkType = Literal["sepolia", "holesky", "mainnet"]
+
+
+class NetworkConfig(TypedDict):
+    chain_id: int
+    provider_url: URI
+    relay_url: URI

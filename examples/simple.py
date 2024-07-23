@@ -32,6 +32,8 @@ from web3.exceptions import TransactionNotFound
 from web3.types import Nonce, TxParams
 
 from flashbots import FlashbotsWeb3, flashbot
+from flashbots.constants import FLASHBOTS_NETWORKS
+from flashbots.types import NetworkType
 
 # Configure logging
 logging.basicConfig(
@@ -40,26 +42,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Define the network to use
-NETWORK = "holesky"  # Options: "sepolia", "holesky", "mainnet"
-
-# Define chain IDs and Flashbots Protect RPC URLs
-NETWORK_CONFIG = {
-    "sepolia": {
-        "chain_id": 11155111,
-        "provider_url": "https://rpc-sepolia.flashbots.net",
-        "relay_url": "https://relay-sepolia.flashbots.net",
-    },
-    "holesky": {
-        "chain_id": 17000,
-        "provider_url": "https://rpc-holesky.flashbots.net",
-        "relay_url": "https://relay-holesky.flashbots.net",
-    },
-    "mainnet": {
-        "chain_id": 1,
-        "provider_url": "https://rpc.flashbots.net",
-        "relay_url": None,  # Mainnet uses default Flashbots relay
-    },
-}
+NETWORK: NetworkType = "holesky"  # Options: "sepolia", "holesky", "mainnet"
 
 
 def env(key: str) -> str:
@@ -78,14 +61,12 @@ def get_account_from_env(key: str) -> LocalAccount:
     return Account.from_key(env(key))
 
 
-def get_provider_url() -> str:
-    return env("PROVIDER_URL") or NETWORK_CONFIG[NETWORK]["provider_url"]
-
-
-def setup_web3() -> FlashbotsWeb3:
-    provider_url = get_provider_url()
+def setup_web3(network: str) -> FlashbotsWeb3:
+    provider_url = os.environ.get(
+        "PROVIDER_URL", FLASHBOTS_NETWORKS[network]["provider_url"]
+    )
     logger.info(f"Using RPC: {provider_url}")
-    relay_url = NETWORK_CONFIG[NETWORK].get("relay_url")
+    relay_url = FLASHBOTS_NETWORKS[network]["relay_url"]
     w3 = flashbot(
         Web3(HTTPProvider(provider_url)),
         get_account_from_env("ETH_SIGNER_KEY"),
@@ -111,7 +92,7 @@ def create_transaction(w3: Web3, sender: str, receiver: str, nonce: int) -> TxPa
         "maxFeePerGas": Web3.to_wei(200, "gwei"),
         "maxPriorityFeePerGas": Web3.to_wei(50, "gwei"),
         "nonce": Nonce(nonce),
-        "chainId": NETWORK_CONFIG[NETWORK]["chain_id"],
+        "chainId": FLASHBOTS_NETWORKS[NETWORK]["chain_id"],
         "type": 2,
     }
 
@@ -119,7 +100,7 @@ def create_transaction(w3: Web3, sender: str, receiver: str, nonce: int) -> TxPa
 def main() -> None:
     sender = get_account_from_env("ETH_SENDER_KEY")
     receiver = random_account().address
-    w3 = setup_web3()
+    w3 = setup_web3(NETWORK)
 
     logger.info(f"Sender address: {sender.address}")
     logger.info(f"Receiver address: {receiver}")
