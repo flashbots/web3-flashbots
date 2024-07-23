@@ -24,6 +24,7 @@ def flashbot(
 
     flashbots_provider = FlashbotProvider(signature_account, endpoint_uri)
 
+    # TODO: see if we can remove this safely; goerli is deprecated
     # goerli connection requires extra PoA middleware
     if endpoint_uri is not None and "goerli" in endpoint_uri:
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)

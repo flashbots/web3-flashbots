@@ -5,7 +5,7 @@ packages = ["flashbots"]
 
 package_data = {"": ["*"]}
 
-install_requires = ["web3>=6,7"]
+install_requires = ["web3>=6,<7"]
 
 setup_kwargs = {
     "name": "flashbots",
