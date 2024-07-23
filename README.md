@@ -42,14 +42,14 @@ poetry install
 
 Tips: PyCharm has a poetry plugin
 
-## Simple Goerli Example
+## Simple Testnet Example
 
 See [examples/simple.py](./examples/simple.py) for environment variable definitions.
 
 ```sh
 poetry shell
 ETH_SENDER_KEY=<sender_private_key> \
-PROVIDER_URL=https://eth-goerli.alchemyapi.io/v2/<alchemy_key> \
+PROVIDER_URL=https://eth-holesky.g.alchemy.com/v2/<alchemy_key> \
 ETH_SIGNER_KEY=<signer_private_key> \
 python examples/simple.py
 ```
