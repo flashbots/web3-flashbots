@@ -24,6 +24,7 @@ import argparse
 import logging
 import os
 import secrets
+from enum import Enum
 from uuid import uuid4
 
 from eth_account.account import Account
@@ -33,7 +34,7 @@ from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 from flashbots import FlashbotsWeb3, flashbot
-from flashbots.constants import FLASHBOTS_NETWORKS, get_networks
+from flashbots.constants import FLASHBOTS_NETWORKS
 from flashbots.types import Network
 
 # Configure logging
@@ -45,14 +46,29 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class EnumAction(argparse.Action):
+    def __init__(self, **kwargs):
+        enum_type = kwargs.pop("type", None)
+        if enum_type is None:
+            raise ValueError("type must be assigned an Enum when using EnumAction")
+        if not issubclass(enum_type, Enum):
+            raise TypeError("type must be an Enum when using EnumAction")
+        kwargs.setdefault("choices", tuple(e.value for e in enum_type))
+        super(EnumAction, self).__init__(**kwargs)
+        self._enum = enum_type
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        value = self._enum(values)
+        setattr(namespace, self.dest, value)
+
+
 def parse_arguments() -> Network:
-    networks = get_networks()
     parser = argparse.ArgumentParser(description="Flashbots simple example")
     parser.add_argument(
         "network",
-        type=str,
-        choices=networks,
-        help=f"The network to use ({', '.join(networks)})",
+        type=Network,
+        action=EnumAction,
+        help=f"The network to use ({', '.join(e.value for e in Network)})",
     )
     parser.add_argument(
         "--log-level",
@@ -81,7 +97,7 @@ def get_account_from_env(key: str) -> LocalAccount:
     return Account.from_key(env(key))
 
 
-def setup_web3(network: str) -> FlashbotsWeb3:
+def setup_web3(network: Network) -> FlashbotsWeb3:
     provider_url = os.environ.get(
         "PROVIDER_URL", FLASHBOTS_NETWORKS[network]["provider_url"]
     )
@@ -105,7 +121,7 @@ def log_account_balances(w3: Web3, sender: str, receiver: str) -> None:
 
 
 def create_transaction(
-    w3: Web3, sender: str, receiver: str, nonce: int, network: str
+    w3: Web3, sender: str, receiver: str, nonce: int, network: Network
 ) -> TxParams:
     # Get the latest gas price information
     latest = w3.eth.get_block("latest")

@@ -1,4 +1,5 @@
-from typing import List, Literal, Optional, TypedDict, Union
+from enum import Enum
+from typing import List, Optional, TypedDict, Union
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI, HexStr
@@ -87,8 +88,11 @@ SignedTxAndHash = TypedDict(
     },
 )
 
-# Add the following new types
-Network = Literal["sepolia", "holesky", "mainnet"]
+
+class Network(Enum):
+    SEPOLIA = "sepolia"
+    HOLESKY = "holesky"
+    MAINNET = "mainnet"
 
 
 class NetworkConfig(TypedDict):
