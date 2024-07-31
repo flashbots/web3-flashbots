@@ -48,7 +48,6 @@ def flashbot(
     """
 
     flashbots_provider = FlashbotProvider(signature_account, endpoint_uri)
-
     flash_middleware = construct_flashbots_middleware(flashbots_provider)
     w3.middleware_onion.add(flash_middleware)
 

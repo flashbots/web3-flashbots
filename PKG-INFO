@@ -1,9 +1,9 @@
 Metadata-Version: 2.1
 Name: flashbots
-Version: 1.1.1
+Version: 2.0.0
 Summary: flashbots client
 Author: Georgios Konstantopoulos
-Author-email: me@gakonst.com
+Author-email: <me@gakonst.com>
 Requires-Python: >=3.9,<4.0
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.9
