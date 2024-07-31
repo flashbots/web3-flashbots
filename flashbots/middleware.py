@@ -1,8 +1,9 @@
-from typing import Callable
+from typing import Any, Callable
+
 from web3 import Web3
 from web3.middleware import Middleware
 from web3.types import RPCEndpoint, RPCResponse
-from typing import Any
+
 from .provider import FlashbotProvider
 
 FLASHBOTS_METHODS = [

@@ -1,8 +1,9 @@
-import rlp
+import logging
 import time
 from functools import reduce
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
+import rlp
 from eth_account import Account
 from eth_account._utils.legacy_transactions import (
     Transaction,
@@ -20,17 +21,16 @@ from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.method import Method
 from web3.module import Module
-from web3.types import RPCEndpoint, Nonce, TxParams
+from web3.types import Nonce, RPCEndpoint, TxParams
 
 from .types import (
-    FlashbotsOpts,
+    FlashbotsBundleDictTx,
     FlashbotsBundleRawTx,
     FlashbotsBundleTx,
-    FlashbotsBundleDictTx,
+    FlashbotsOpts,
     SignedTxAndHash,
     TxReceipt,
 )
-
 
 SECONDS_PER_BLOCK = 12
 
@@ -123,6 +123,7 @@ class FlashbotsPrivateTransactionResponse:
 class Flashbots(Module):
     signed_txs: List[HexBytes]
     response: Union[FlashbotsBundleResponse, FlashbotsPrivateTransactionResponse]
+    logger = logging.getLogger("flashbots")
 
     def sign_bundle(
         self,
@@ -245,6 +246,7 @@ class Flashbots(Module):
         self.response = FlashbotsBundleResponse(
             self.w3, signed_txs, target_block_number
         )
+        self.logger.info(f"Sending bundle targeting block {target_block_number}")
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
     def raw_bundle_formatter(self, resp) -> Any:
@@ -255,6 +257,7 @@ class Flashbots(Module):
         mungers=[send_bundle_munger],
         result_formatters=raw_bundle_formatter,
     )
+
     send_bundle = sendBundle
 
     def cancel_bundles_munger(
@@ -306,6 +309,7 @@ class Flashbots(Module):
 
         signed_bundled_transactions = self.sign_bundle(bundled_transactions)
         # calls evm simulator
+        self.logger.info(f"Simulating bundle on block {block_number}")
         call_result = self.call_bundle(
             signed_bundled_transactions,
             evm_block_number,
@@ -423,6 +427,9 @@ class Flashbots(Module):
         self.response = FlashbotsPrivateTransactionResponse(
             self.w3, signed_transaction, max_block_number
         )
+        self.logger.info(
+            f"Sending private transaction with max block number {max_block_number}"
+        )
         return [params]
 
     sendPrivateTransaction: Method[Callable[[Any], Any]] = Method(
@@ -445,6 +452,7 @@ class Flashbots(Module):
         params = {
             "txHash": tx_hash,
         }
+        self.logger.info(f"Cancelling private transaction with hash {tx_hash}")
         return [params]
 
     cancelPrivateTransaction: Method[Callable[[Any], Any]] = Method(

@@ -1,9 +1,10 @@
-from eth_account.signers.local import LocalAccount
-from eth_typing import HexStr
-from hexbytes import HexBytes
-from typing import TypedDict, List, Union, Optional
-from web3.types import TxParams, _Hash32
+from enum import Enum
+from typing import List, Optional, TypedDict, Union
 
+from eth_account.signers.local import LocalAccount
+from eth_typing import URI, HexStr
+from hexbytes import HexBytes
+from web3.types import TxParams, _Hash32
 
 # unsigned transaction
 FlashbotsBundleTx = TypedDict(
@@ -86,3 +87,15 @@ SignedTxAndHash = TypedDict(
         "hash": HexBytes,
     },
 )
+
+
+class Network(Enum):
+    SEPOLIA = "sepolia"
+    HOLESKY = "holesky"
+    MAINNET = "mainnet"
+
+
+class NetworkConfig(TypedDict):
+    chain_id: int
+    provider_url: URI
+    relay_url: URI
