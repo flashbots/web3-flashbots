@@ -108,7 +108,8 @@ class FlashbotsPrivateTransactionResponse:
                 self.w3.eth.get_transaction(self.tx["hash"])
                 return True
             except TransactionNotFound:
-                if self.w3.eth.block_number > self.max_block_number:
+                # Add 1 to give web3 provider more time to sync and cache transactions
+                if self.w3.eth.block_number > self.max_block_number + 1:
                     return False
                 time.sleep(1)
 
