@@ -170,7 +170,7 @@ def main() -> None:
         block = w3.eth.block_number
 
         # Simulation is only supported on mainnet
-        if network == "mainnet":
+        if network == Network.MAINNET:
             # Simulate bundle on current block.
             # If your RPC provider is not fast enough, you may get "block extrapolation negative"
             # error message triggered by "extrapolate_timestamp" function in "flashbots.py".
@@ -207,8 +207,16 @@ def main() -> None:
             break
         except TransactionNotFound:
             logger.info(f"Bundle not found in block {block + 1}")
-            cancel_res = w3.flashbots.cancel_bundles(replacement_uuid)
-            logger.info(f"Canceled {cancel_res}")
+            try:
+                cancel_res = w3.flashbots.cancel_bundles(replacement_uuid)
+                logger.info(f"Canceled {cancel_res}")
+            except Exception as e:
+                if "400" in str(e):
+                    logger.warning(
+                        f"Bundle cancellation returned 400 error (bundle may not exist), ignoring: {e}"
+                    )
+                else:
+                    raise
 
     log_account_balances(w3, sender.address, receiver)
 
