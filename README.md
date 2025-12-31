@@ -32,33 +32,26 @@ flashbot(w3, ETH_ACCOUNT_SIGNATURE, "https://relay-goerli.flashbots.net")
 
 ## Development and testing
 
-Install [poetry](https://python-poetry.org/)
-
-Poetry will automatically fix your venv and all packages needed.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
 ```sh
-poetry install
+uv sync --dev
 ```
-
-Tips: PyCharm has a poetry plugin
 
 ## Simple Testnet Example
 
 See [examples/simple.py](./examples/simple.py) for environment variable definitions.
 
 ```sh
-poetry shell
 ETH_SENDER_KEY=<sender_private_key> \
 PROVIDER_URL=https://eth-holesky.g.alchemy.com/v2/<alchemy_key> \
 ETH_SIGNER_KEY=<signer_private_key> \
-python examples/simple.py
+uv run python examples/simple.py
 ```
 
 ## Linting
 
-It's advisable to run black with default rules for linting
-
 ```sh
-sudo pip install black # Black should be installed with a global entrypoint
-black .
+uv run ruff check .
+uv run ruff format .
 ```

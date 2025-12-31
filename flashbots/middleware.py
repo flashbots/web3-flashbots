@@ -1,7 +1,6 @@
-from typing import Any, Callable
+from typing import Any, Type
 
 from web3 import Web3
-from web3.middleware import Middleware
 from web3.types import RPCEndpoint, RPCResponse
 
 from .provider import FlashbotProvider
@@ -21,25 +20,23 @@ FLASHBOTS_METHODS = [
 
 def construct_flashbots_middleware(
     flashbots_provider: FlashbotProvider,
-) -> Middleware:
-    """Captures Flashbots RPC requests and sends them to the Flashbots endpoint
-    while also injecting the required authorization headers
-
-    Keyword arguments:
-    flashbots_provider -- An HTTP provider instantiated with any authorization headers
-    required
+) -> Type:
     """
+    Returns a Web3.py v7-compatible middleware class.
+    Inject it using:
+        w3.middleware_onion.add(construct_flashbots_middleware(provider))
+    """
+    class FlashbotsMiddleware:
+        def __init__(self, w3: Web3):
+            self.w3 = w3
+            self.flashbots_provider = flashbots_provider
 
-    def flashbots_middleware(
-        make_request: Callable[[RPCEndpoint, Any], Any], w3: Web3
-    ) -> Callable[[RPCEndpoint, Any], RPCResponse]:
-        def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
-            if method not in FLASHBOTS_METHODS:
+        def wrap_make_request(self, make_request):
+            # This method is called by combine_middleware
+            def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
+                if method in FLASHBOTS_METHODS:
+                    return self.flashbots_provider.make_request(method, params)
                 return make_request(method, params)
-            else:
-                # otherwise intercept it and POST it
-                return flashbots_provider.make_request(method, params)
+            return middleware
 
-        return middleware
-
-    return flashbots_middleware
+    return FlashbotsMiddleware

@@ -1,26 +1,36 @@
-[tool.poetry]
-authors = [
-    "Georgios Konstantopoulos <me@gakonst.com>",
-    "Nikolas Papaioannou <n0k0@hacky.software>",
-    "Brock Smedley <brock@flashbots.net>",
-]
-description = ""
+[project]
 name = "flashbots"
+version = "3.0.0"
+description = "Web3.py plugin for using Flashbots' bundle APIs"
 readme = "README.md"
-version = "2.0.0"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+    { name = "Georgios Konstantopoulos", email = "me@gakonst.com" },
+    { name = "Nikolas Papaioannou", email = "n0k0@hacky.software" },
+    { name = "Brock Smedley", email = "brock@flashbots.net" },
+]
+dependencies = [
+    "web3>=7.0.0",
+    "urllib3<2.0",
+    "websockets>=13.0.0,<14.0.0",
+    "eth-account>=0.13.7",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-web3 = ">=6, <7"
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.5.4",
+    "pytest-recording>=0.11.0",
+    "vcrpy>=4.1.1",
+]
 
-[tool.poetry.dev-dependencies]
-ruff = "^0.5.4"
-pytest-recording = "^0.11.0"
-vcrpy = "^4.1.1"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.ruff]
 target-version = "py312"
 
-[build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+[tool.hatch.build.targets.wheel]
+packages = ["flashbots"]

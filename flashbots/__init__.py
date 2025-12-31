@@ -5,9 +5,34 @@ from eth_typing import URI
 from web3 import Web3
 from web3._utils.module import attach_modules
 
+from .exceptions import (
+    BlockExtrapolationError,
+    FlashbotsError,
+    FlashbotsProviderError,
+    FlashbotsRequestError,
+    FlashbotsTransactionError,
+    InvalidTransactionError,
+    TransactionSignatureError,
+)
 from .flashbots import Flashbots
 from .middleware import construct_flashbots_middleware
 from .provider import FlashbotProvider
+
+__all__ = [
+    "BlockExtrapolationError",
+    "FlashbotsError",
+    "FlashbotsProviderError",
+    "FlashbotsRequestError",
+    "FlashbotsTransactionError",
+    "InvalidTransactionError",
+    "TransactionSignatureError",
+    "Flashbots",
+    "FlashbotProvider",
+    "FlashbotsWeb3",
+    "construct_flashbots_middleware",
+    "flashbot",
+    "DEFAULT_FLASHBOTS_RELAY",
+]
 
 DEFAULT_FLASHBOTS_RELAY = "https://relay.flashbots.net"
 

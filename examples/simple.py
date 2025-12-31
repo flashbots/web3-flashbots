@@ -161,7 +161,7 @@ def main() -> None:
 
     tx1_signed = w3.eth.account.sign_transaction(tx1, private_key=sender.key)
     bundle = [
-        {"signed_transaction": tx1_signed.rawTransaction},
+        {"signed_transaction": tx1_signed.raw_transaction},
         {"transaction": tx2, "signer": sender},
     ]
 
