@@ -44,6 +44,7 @@ def flashbot(
         - Titan: 'https://rpc.titanbuilder.xyz/'
         - Beaver: 'https://rpc.beaverbuild.org/'
         - Rsync: 'https://rsync-builder.xyz/'
+        - Aqua Builder: 'https://rpc.aquabuilder.online'
         - Flashbots: 'https://relay.flashbots.net' (default)
     """
 
